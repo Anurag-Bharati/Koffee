@@ -3,12 +3,12 @@
 import sys
 import pygame
 from pygame.locals import *     # Importing pygame classes into global namespace :V Lol what?
+import hud_grid
 
 # [2] Init the pygame modules:
 
 pygame.mixer.init()
 pygame.init()
-
 
 pygame.display.set_caption("Koffee")
 font_impact = pygame.font.SysFont("Impact", 18)
@@ -20,13 +20,14 @@ gameClock = pygame.time.Clock()
 
 #           >---------[CONSTANTS]---------<
 
-Window_Width = 1280
-Window_Height = 720
+Window_Width = 1280     # 40 Tiles Width 32
+Window_Height = 720     # 24 Tiles Height 30
 
 # COLORS
 
 White = (255, 255, 255)
 Black = (0, 0, 0)
+Cyan = (70, 194, 166)
 
 #           >---------[VARIABLES]---------<
 
@@ -82,9 +83,9 @@ def event_handler():            # All Event handling here
 def renderer():                 # All graphics here
 
     pygame.display.update()
-    screen.fill(White)
-
-    screen.blit(update_fps(), (10, 10))     # Must be at last :)
+    screen.fill(Cyan)
+    hud_grid.draw_grid()
+    screen.blit(update_fps(), (5, 3))     # Must be at last :)
 
 
 def mains():                    # Main function
