@@ -3,7 +3,11 @@
 import sys
 import pygame
 from pygame.locals import *     # Importing pygame classes into global namespace :V Lol what?
+
 import hud_grid
+
+from PlayerBluePrint import Player
+
 
 # [2] Init the pygame modules:
 
@@ -33,10 +37,13 @@ Cyan = (70, 194, 166)
 
 FPS = 60  # FPS CA
 fps_color = pygame.Color("White")  # Init fps_color
+move_left = False
+move_right = False
 
 # Debug tools
 
-flags = False  # Enable or disable full-screen mode
+flags = True  # Enable or disable full-screen mode
+grid = True
 
 # Creates a display
 
@@ -72,20 +79,56 @@ def update_fps():  # Function for fps-overlay
 
 
 def event_handler():            # All Event handling here
+    global move_right, move_left
+
+    # Handling Animation
+    if Knight.Alive:
+
+        if Knight.above_ground:
+            Player.change_action(Knight, new_action = 2)  # 2 = jump
+        elif move_right or move_left:
+            Player.change_action(Knight, new_action = 1)  # 1 = run
+        else:
+            Player.change_action(Knight, new_action = 0)  # 0 = idle
 
     for event in pygame.event.get():
+
         if event.type == pygame.QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
             pygame.mixer.quit()
             pygame.quit()
             sys.exit()
+        if event.type == KEYDOWN:  # Triggered when key is pressed down
+            if event.key == K_a:
+                move_left = True
+            if event.key == K_d:
+                move_right = True
+            if event.key == K_SPACE:
+                Knight.isJump = True
+
+        if event.type == KEYUP:  # Released when key is released
+            if event.key == K_a:
+                move_left = False
+
+            if event.key == K_d:
+                move_right = False
 
 
 def renderer():                 # All graphics here
 
     pygame.display.update()
     screen.fill(Cyan)
-    hud_grid.draw_grid()
+
+    Knight.draw(screen)
+    Knight.mov(Window_Width, move_left, move_right)
+    Knight.update()
+
+    if grid:
+        hud_grid.draw_grid()
+
     screen.blit(update_fps(), (5, 3))     # Must be at last :)
+
+
+Knight = Player("player", 1, 100, 500, 1.25, 3)
 
 
 def mains():                    # Main function
