@@ -31,6 +31,7 @@ Window_Height = 720     # 24 Tiles Height 30
 
 White = (255, 255, 255)
 Black = (0, 0, 0)
+Red = (255, 0, 0)
 Cyan = (70, 194, 166)
 
 #           >---------[VARIABLES]---------<
@@ -42,8 +43,9 @@ move_right = False
 
 # Debug tools
 
-flags = True  # Enable or disable full-screen mode
-grid = True
+flags = False  # Enable or disable full-screen mode
+grid = False
+debug = False
 
 # Creates a display
 
@@ -79,14 +81,14 @@ def update_fps():  # Function for fps-overlay
 
 
 def event_handler():            # All Event handling here
-    global move_right, move_left
+    global move_right, move_left, debug, grid
 
     # Handling Animation
     if Knight.Alive:
 
         if Knight.above_ground:
             Player.change_action(Knight, new_action = 2)  # 2 = jump
-        elif move_right or move_left:
+        elif move_right or move_left and not Knight.above_ground:
             Player.change_action(Knight, new_action = 1)  # 1 = run
         else:
             Player.change_action(Knight, new_action = 0)  # 0 = idle
@@ -104,6 +106,21 @@ def event_handler():            # All Event handling here
                 move_right = True
             if event.key == K_SPACE:
                 Knight.isJump = True
+
+            if event.key == K_TAB:
+                if not debug:
+                    grid = False
+                    debug = True
+                else:
+                    debug = False
+
+            if event.key == K_LCTRL:
+
+                if not grid:
+                    debug = False
+                    grid = True
+                else:
+                    grid = False
 
         if event.type == KEYUP:  # Released when key is released
             if event.key == K_a:
@@ -124,11 +141,86 @@ def renderer():                 # All graphics here
 
     if grid:
         hud_grid.draw_grid()
+        pygame.draw.rect(screen, Red, Knight.rect, 1)
+    if debug:
+        debug_stats()
+        pygame.draw.rect(screen, Red, Knight.rect, 1)
 
-    screen.blit(update_fps(), (5, 3))     # Must be at last :)
+    screen.blit(update_fps(), (10, 3))     # Must be at last :)
 
 
 Knight = Player("player", 1, 100, 500, 1.25, 3)
+
+
+def debug_stats():
+
+    global rawTick, gameTime, gameRes, gameFps, activeFlags, playerMov, res, initial_time,\
+        Knight_location, Knight_action, game_uptime, Knight_velocity, mouse_pos, Knight_animation_index, gameTick
+
+    debug_update_timer = 50                                    # Timer for updating
+
+    screen.blit(debug_title, (10, 40))
+    screen.blit(game_info, (10, 60))
+    screen.blit(gameFps, (10, 90))
+    screen.blit(gameTime, (10, 110))
+    screen.blit(rawTick, (150, 110))
+    screen.blit(gameTick, (250, 110))
+    screen.blit(activeFlags, (10, 130))
+    screen.blit(gameRes, (10, 150))
+    screen.blit(display_info, (10, 180))
+    screen.blit(playerMov, (10, 210))
+    screen.blit(Knight_location, (10, 230))
+    screen.blit(Knight_velocity, (10, 250))
+    screen.blit(Knight_action, (10, 270))
+    screen.blit(Knight_animation_index, (10, 290))
+
+    screen.blit(mouse_pos, (10, 320))
+
+    screen.blit(game_uptime, (10, 350))
+
+    if pygame.time.get_ticks() - initial_time > debug_update_timer:
+
+        initial_time = pygame.time.get_ticks()
+
+        res = (Window_Width, Window_Height)
+
+        rawTick = font_consolas.render(str(f"praw_tick:{gameClock.get_rawtime()}"), True, White)
+        gameTime = font_consolas.render(str(f"previous_tick:{gameClock.get_time()}"), True, White)
+        gameTick = font_consolas.render(str(f"game_tick:{pygame.time.get_ticks()}"), True, White)
+        gameFps = font_consolas.render(str(f"frame_per_sec:{gameClock.get_fps().__round__(5)}"), True, White)
+        activeFlags = font_consolas.render(str(f"active_flags:{screen.get_flags()}"), True, White)
+
+        playerMov = font_consolas.render(str(f"knight_moving:{move_left or move_right}"), True, White)
+        Knight_location = font_consolas.render(str(f"knight_location:{Knight.rect.x, Knight.rect.y}"), True, White)
+        Knight_velocity = font_consolas.render(str(f"knight_vel:{Knight.debug_vel}"), True, White)
+        Knight_action = font_consolas.render(str(f"knight_action:{Knight.action}"), True, White)
+        Knight_animation_index = font_consolas.render(str(f"knight_action_index:{Knight.animation_index}"), True, White)
+        game_uptime = font_consolas.render(str(f"game_uptime: {Knight.update_time // 1000} (sec)"), True, White)
+        mouse_pos = font_consolas.render(str(f"mouse_pos:{pygame.mouse.get_pos()}"), True, White)
+
+
+initial_time = pygame.time.get_ticks()
+
+debug_title = font_consolas.render(str("DEBUG_STAT"), True, White)
+game_info = font_consolas.render("version 1.1 | Dev(fe/be):210030", True, White)
+
+res = (Window_Width, Window_Height)
+rawTick = font_consolas.render(str(f"praw_tick:{gameClock.get_rawtime()}"), True, White)
+gameTime = font_consolas.render(str(f"previous_tick:{gameClock.get_time()}"), True, White)
+gameTick = font_consolas.render(str(f"game_tick:{pygame.time.get_ticks()}"), True, White)
+gameFps = font_consolas.render(str(f"frame_per_sec:{gameClock.get_fps()}"), True, White)
+activeFlags = font_consolas.render(str(f"active_flags:{screen.get_flags()}"), True, White)
+gameRes = font_consolas.render(str(f"current_res:{res}"), True, White)
+display_info = font_consolas.render(str(f"display_driver:{pygame.display.get_driver()}"), True, White)
+
+playerMov = font_consolas.render(str(f"knight_moving:{move_left or move_right}"), True, White)
+Knight_location = font_consolas.render(str(f"knight_location:{Knight.rect.x, Knight.rect.y}"), True, White)
+Knight_velocity = font_consolas.render(str(f"knight_vel:{Knight.debug_vel}"), True, White)
+Knight_action = font_consolas.render(str(f"knight_action:{Knight.action}"), True, White)
+Knight_animation_index = font_consolas.render(str(f"knight_action_index:{Knight.animation_index}"), True, White)
+
+game_uptime = font_consolas.render(str(f"game_uptime: {Knight.update_time // 1000} (sec)"), True, White)
+mouse_pos = font_consolas.render(str(f"mouse_pos:{pygame.mouse.get_pos()}"), True, White)
 
 
 def mains():                    # Main function
