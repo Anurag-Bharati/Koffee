@@ -157,8 +157,6 @@ def event_handler():            # All Event handling here
 
 def renderer():                 # All graphics here
 
-    render_start = time.perf_counter()
-
     pygame.display.update()
     screen.fill(Cyan)
 
@@ -176,7 +174,6 @@ def renderer():                 # All graphics here
         pygame.draw.rect(screen, Red, Knight.rect, 1)
 
     screen.blit(update_fps(), (10, 3))     # Must be at last :)
-    render_end = time.perf_counter()
 
 
 Knight = Player("player", 1, 100, 500, 1.25, 3)
@@ -234,7 +231,7 @@ def debug_stats():
 initial_time = pygame.time.get_ticks()
 
 debug_title = font_consolas.render(str("DEBUG_STAT"), True, White)
-game_info = font_consolas.render("version 1.1 | Dev(fe/be):210030", True, White)
+game_info = font_consolas.render("version 1.2 | Dev(fe/be):210030", True, White)
 
 res = (Window_Width, Window_Height)
 rawTick = font_consolas.render(str(f"praw_tick:{gameClock.get_rawtime()}"), True, White)
