@@ -88,8 +88,8 @@ class Player(pygame.sprite.Sprite):
 
         # temp collision
 
-        if self.rect.bottom + dy > 600:
-            dy = 600 - self.rect.bottom
+        if self.rect.bottom + dy > 480:
+            dy = 480 - self.rect.bottom
             self.above_ground = False
 
         self.rect.x += dx

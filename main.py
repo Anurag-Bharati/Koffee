@@ -1,13 +1,12 @@
 # [1] Importing the Modules
 
-import sys
+import sys, time
 import pygame
 from pygame.locals import *     # Importing pygame classes into global namespace :V Lol what?
 
 import hud_grid
-
 from PlayerBluePrint import Player
-
+from level_generator import Earth
 
 # [2] Init the pygame modules:
 
@@ -21,6 +20,33 @@ font_consolas = pygame.font.SysFont("consolas", 15)
 # [3] Setting up a pause sys for main loop so that game match the given frame-rate:
 
 gameClock = pygame.time.Clock()
+
+level_data = [
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
+    [1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
+    [1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,1,1,1],
+    [1,1,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1],
+    [1,1,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1,1,1,1],
+    [1,1,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1,1,1,1],
+    [1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1],
+    [1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+]
 
 #           >---------[CONSTANTS]---------<
 
@@ -43,7 +69,7 @@ move_right = False
 
 # Debug tools
 
-flags = False  # Enable or disable full-screen mode
+flags = True  # Enable or disable full-screen mode
 grid = False
 debug = False
 
@@ -55,8 +81,6 @@ if flags:
 screen = pygame.display.set_mode((Window_Width, Window_Height), flags, 8, vsync=True)   # Size, flags, Color, verticalSy
 
 pygame.mouse.set_cursor(pygame.cursors.diamond)  # change cursor icon
-
-print(pygame.display.get_window_size())  # used for debugging the actual size
 
 
 def update_fps():  # Function for fps-overlay
@@ -81,6 +105,7 @@ def update_fps():  # Function for fps-overlay
 
 
 def event_handler():            # All Event handling here
+
     global move_right, move_left, debug, grid
 
     # Handling Animation
@@ -132,12 +157,16 @@ def event_handler():            # All Event handling here
 
 def renderer():                 # All graphics here
 
+    render_start = time.perf_counter()
+
     pygame.display.update()
     screen.fill(Cyan)
 
     Knight.draw(screen)
     Knight.mov(Window_Width, move_left, move_right)
     Knight.update()
+
+    level.draw(screen)
 
     if grid:
         hud_grid.draw_grid()
@@ -147,9 +176,12 @@ def renderer():                 # All graphics here
         pygame.draw.rect(screen, Red, Knight.rect, 1)
 
     screen.blit(update_fps(), (10, 3))     # Must be at last :)
+    render_end = time.perf_counter()
 
 
 Knight = Player("player", 1, 100, 500, 1.25, 3)
+
+level = Earth(level_data)
 
 
 def debug_stats():
@@ -157,7 +189,7 @@ def debug_stats():
     global rawTick, gameTime, gameRes, gameFps, activeFlags, playerMov, res, initial_time,\
         Knight_location, Knight_action, game_uptime, Knight_velocity, mouse_pos, Knight_animation_index, gameTick
 
-    debug_update_timer = 50                                    # Timer for updating
+    debug_update_timer = 50                                   # Timer for updating
 
     screen.blit(debug_title, (10, 40))
     screen.blit(game_info, (10, 60))
@@ -236,4 +268,7 @@ def mains():                    # Main function
 
 
 if __name__ == '__main__':
+    print(pygame.display.get_window_size())  # used for debugging the actual size
+    print("> starting the main loop..")
     mains()
+
