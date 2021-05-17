@@ -6,7 +6,8 @@ from pygame.locals import *     # Importing pygame classes into global namespace
 
 import hud_grid
 from PlayerBluePrint import Player
-from level_generator import Earth
+from level_generator import Earth, slime_group
+
 
 # [2] Init the pygame modules:
 
@@ -28,7 +29,7 @@ level_data = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1],
     [1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
-    [1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
+    [1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,7,0,0,0,0,1,1,1,1],
     [1,1,1,1,5,5,5,5,5,5,5,5,5,5,0,0,0,5,0,0,5,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
     [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,5,5,0,0,0,0,0,0,0,0,0,1,1,1,1],
     [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,5,0,0,0,0,0,1,1,1],
@@ -171,8 +172,11 @@ def renderer():                 # All graphics here
 
     level.draw(screen)
 
+    slime_group.draw(screen)
+    slime_group.update()
+
     if grid:
-        hud_grid.draw_grid()
+        hud_grid.draw_grid(screen, White, Window_Width, Window_Height, font_consolas)
         pygame.draw.rect(screen, Red, Knight.rect, 1)
     if debug:
         debug_stats()
@@ -259,20 +263,13 @@ game_uptime = font_consolas.render(str(f"game_uptime: {Knight.update_time // 100
 mouse_pos = font_consolas.render(str(f"mouse_pos:{pygame.mouse.get_pos()}"), True, White)
 
 
-def mains():                    # Main function
+mainloop = True
+while mainloop:
 
-    mainloop = True
-    while mainloop:
+    gameClock.tick(FPS)
 
-        gameClock.tick(FPS)
+    event_handler()
 
-        event_handler()
+    renderer()
 
-        renderer()
-
-
-if __name__ == '__main__':
-    print(pygame.display.get_window_size())  # used for debugging the actual size
-    print("> starting the main loop..")
-    mains()
 
