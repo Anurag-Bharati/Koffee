@@ -237,6 +237,7 @@ def debug_stats():
 initial_time = pygame.time.get_ticks()
 
 debug_title = font_consolas.render(str("DEBUG_STAT"), True, White)
+
 game_info = font_consolas.render("version 1.3 | Dev(fe/be):210030", True, White)
 
 res = (Window_Width, Window_Height)
