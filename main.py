@@ -22,6 +22,7 @@ font_consolas = pygame.font.SysFont("consolas", 15)
 
 # [3] Setting up a pause sys for main loop so that game match the given frame-rate:
 
+
 gameClock = pygame.time.Clock()
 
 level_data = [
@@ -40,10 +41,10 @@ level_data = [
     [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
     [1,1,1,5,5,5,5,5,0,0,0,0,0,0,0,0,0,4,4,4,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
     [1,1,1,0,0,0,0,0,0,0,0,5,5,0,0,0,5,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,4,4,0,0,5,4,4,4,4,4,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,5,4,4,0,0,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,5,5,5,5,5,5,5,4,4,4,5,5,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,1,1,1],
-    [1,1,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,4,4,0,0,5,4,4,4,3,4,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,5,4,4,0,0,4,4,4,4,3,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,5,5,5,5,5,5,5,4,4,4,5,5,4,4,4,3,3,3,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,1,1,1],
+    [1,1,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1],
     [1,1,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1,1,1,1],
     [1,1,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1,1,1,1],
     [1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1],
@@ -75,6 +76,8 @@ move_right = False
 flags = False  # Enable or disable full-screen mode
 grid = False
 debug = False
+
+mainloop = True
 
 # Creates a display
 
@@ -163,11 +166,10 @@ def event_handler():            # All Event handling here
 
 def renderer():                 # All graphics here
 
-    pygame.display.update()
     screen.fill(Cyan)
 
     Knight.draw(screen)
-    Knight.mov(move_left, move_right)
+    Knight.mov(move_left, move_right, level)
     Knight.update()
 
     level.draw(screen)
@@ -183,6 +185,7 @@ def renderer():                 # All graphics here
         pygame.draw.rect(screen, Red, Knight.rect, 1)
 
     screen.blit(update_fps(), (10, 3))     # Must be at last :)
+    pygame.display.update()
 
 
 Knight = Player("player", 1, 150, 300, 1.25, 3)
@@ -262,8 +265,9 @@ Knight_animation_index = font_consolas.render(str(f"knight_action_index:{Knight.
 game_uptime = font_consolas.render(str(f"game_uptime: {Knight.update_time // 1000} (sec)"), True, White)
 mouse_pos = font_consolas.render(str(f"mouse_pos:{pygame.mouse.get_pos()}"), True, White)
 
+
 if __name__ == "__main__":
-    mainloop = True
+
     while mainloop:
 
         gameClock.tick(FPS)
@@ -271,5 +275,8 @@ if __name__ == "__main__":
         event_handler()
 
         renderer()
+    pygame.mixer.quit()
+    pygame.quit()
 
-
+else:
+    mainloop = False

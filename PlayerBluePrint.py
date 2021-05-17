@@ -1,8 +1,6 @@
 import pygame
 import os
 
-import main
-
 GRAVITY = 0.75
 
 
@@ -57,7 +55,7 @@ class Player(pygame.sprite.Sprite):
         self.update_animation()
         self.check_alive()
 
-    def mov(self, move_left, move_right):  # htf its showing this? not a error skip.
+    def mov(self, move_left, move_right, What):  # htf its showing this? not a error skip.
 
         # Resets mov var
         dx = 0  # Created to assign the change
@@ -90,7 +88,7 @@ class Player(pygame.sprite.Sprite):
 
         dy += self.jump_vel
 
-        for tile in main.level.tile_list:                           # New collision system - Checks before updating
+        for tile in What.tile_list:                           # New collision system - Checks before updating
 
             if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.player_width, self.player_height):
                 dx = 0

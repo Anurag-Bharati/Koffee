@@ -42,4 +42,3 @@ class Enemy(pygame.sprite.Sprite):
             if self.animation_index >= len(self.animation_list)-1:  # to prevent overflow
                 self.animation_index = 0
 
-

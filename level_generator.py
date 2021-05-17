@@ -1,8 +1,8 @@
 import pygame
 import random
 
-import main
-import enemy
+
+from enemy import Enemy
 
 slime_group = pygame.sprite.Group()
 
@@ -11,10 +11,15 @@ grid_y = 30
 
 show_colloidal = False
 
+# For unittest
+
+slime_quantity = 0
+
 
 class Earth:
 
     def __init__(self, world_data):
+        global slime_quantity
 
         self.tile_list = []
 
@@ -25,6 +30,7 @@ class Earth:
         stone = pygame.image.load("assets/images/tiles/fixed/3.png").convert_alpha()
 
         at_row = 0
+
         for row in world_data:
             at_column = 0
             for tile in row:
@@ -69,8 +75,10 @@ class Earth:
                     self.tile_list.append(tile)
 
                 if tile == 7:
-                    slime = enemy.Enemy(at_column * grid_x, at_row*grid_y, 1, 1)
+                    slime = Enemy(at_column * grid_x, at_row*grid_y, 1, 1)
                     slime_group.add(slime)
+                    # For debug
+                    slime_quantity += 1
                 at_column += 1
             at_row += 1
 
@@ -80,4 +88,4 @@ class Earth:
 
             Where.blit(tile[0], tile[1])
             if show_colloidal:
-                pygame.draw.rect(main.screen, (0, 150, 0), tile[1], 1)
+                pygame.draw.rect(Where, (0, 150, 0), tile[1], 1)
