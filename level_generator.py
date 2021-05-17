@@ -2,7 +2,7 @@ import pygame
 import random
 
 import main
-from enemy import Enemy
+import enemy
 
 slime_group = pygame.sprite.Group()
 
@@ -69,7 +69,7 @@ class Earth:
                     self.tile_list.append(tile)
 
                 if tile == 7:
-                    slime = Enemy(at_column * grid_x, at_row*grid_y, 1, 1)
+                    slime = enemy.Enemy(at_column * grid_x, at_row*grid_y, 1, 1)
                     slime_group.add(slime)
                 at_column += 1
             at_row += 1

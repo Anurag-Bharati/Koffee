@@ -262,14 +262,14 @@ Knight_animation_index = font_consolas.render(str(f"knight_action_index:{Knight.
 game_uptime = font_consolas.render(str(f"game_uptime: {Knight.update_time // 1000} (sec)"), True, White)
 mouse_pos = font_consolas.render(str(f"mouse_pos:{pygame.mouse.get_pos()}"), True, White)
 
+if __name__ == "__main__":
+    mainloop = True
+    while mainloop:
 
-mainloop = True
-while mainloop:
+        gameClock.tick(FPS)
 
-    gameClock.tick(FPS)
+        event_handler()
 
-    event_handler()
-
-    renderer()
+        renderer()
 
 
