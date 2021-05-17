@@ -1,12 +1,17 @@
-import pygame, os
+import pygame
+import random
+
+import main
 
 grid_x = 32
 grid_y = 30
 
+show_colloidal = False
+
 
 class Earth:
 
-    def __init__ (self, world_data):
+    def __init__(self, world_data):
 
         self.tile_list = []
 
@@ -28,6 +33,7 @@ class Earth:
                     tile = (block, img_rect)
                     self.tile_list.append(tile)
                 if tile == 5:
+
                     block = pygame.transform.scale(grass, (grid_x, grid_y))
                     img_rect = block.get_rect()
                     img_rect.x = at_column * grid_x
@@ -35,6 +41,7 @@ class Earth:
                     tile = (block, img_rect)
                     self.tile_list.append(tile)
                 if tile == 4:
+                    dirt = pygame.transform.flip(dirt, bool(random.randint(0, 1)), bool(random.randint(0, 1)))
                     block = pygame.transform.scale(dirt, (grid_x, grid_y))
                     img_rect = block.get_rect()
                     img_rect.x = at_column * grid_x
@@ -42,6 +49,7 @@ class Earth:
                     tile = (block, img_rect)
                     self.tile_list.append(tile)
                 if tile == 3:
+                    stone = pygame.transform.flip(stone, bool(random.randint(0, 1)), False)
                     block = pygame.transform.scale(stone, (grid_x, grid_y))
                     img_rect = block.get_rect()
                     img_rect.x = at_column * grid_x
@@ -49,6 +57,7 @@ class Earth:
                     tile = (block, img_rect)
                     self.tile_list.append(tile)
                 if tile == 2:
+                    rock = pygame.transform.flip(rock, bool(random.randint(0, 1)), bool(random.randint(0, 1)))
                     block = pygame.transform.scale(rock, (grid_x, grid_y))
                     img_rect = block.get_rect()
                     img_rect.x = at_column * grid_x
@@ -63,3 +72,5 @@ class Earth:
         for tile in self.tile_list:
 
             Where.blit(tile[0], tile[1])
+            if show_colloidal:
+                pygame.draw.rect(main.screen, (0, 150, 0), tile[1], 1)

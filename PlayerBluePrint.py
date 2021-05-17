@@ -1,6 +1,8 @@
 import pygame
 import os
 
+import main
+
 GRAVITY = 0.75
 
 
@@ -8,7 +10,7 @@ class Player(pygame.sprite.Sprite):
 
     def __init__(self, player_type, health, xPos, yPos, player_scale, velocity):
         pygame.sprite.Sprite.__init__(self)
-        self.debug_vel = 0, 0
+        self.current_vel = 0, 0
         self.Alive = True
         self.health = health
         self.init_health = health
@@ -39,37 +41,39 @@ class Player(pygame.sprite.Sprite):
                 player_img = pygame.transform.scale(player_img,  # SCALING happens here
                                                     (int(player_img.get_width() * player_scale),
                                                      int(player_img.get_height() * player_scale)))
-                player_img.convert_alpha()  # Optimizing
+                player_img.convert_alpha()              # Optimizing
                 animation_cache.append(player_img)
             self.animation_list.append(animation_cache)
 
 #       print(self.animation_list)
         self.player_image = self.animation_list[self.action][self.animation_index]
-        self.rect = self.player_image.get_rect()  # Creating a for self
-        self.rect.center = (xPos, yPos)  # setting the rect location to player's loc
+        self.rect = self.player_image.get_rect()     # Creating a for self
+        self.rect.center = (xPos, yPos)                 # setting the rect location to player's loc
+        self.player_width = self.player_image.get_width()
+        self.player_height = self.player_image.get_height()
 
     def update(self):
 
         self.update_animation()
         self.check_alive()
 
-    def mov(self, screen_width, move_left, move_right):  # htf its showing this? not a error skip.
+    def mov(self, move_left, move_right):  # htf its showing this? not a error skip.
 
         # Resets mov var
         dx = 0  # Created to assign the change
         dy = 0
 
-        if move_left or move_right:         # Changing the animation timer for run animation
+        if (move_left or move_right) and self.current_vel[0] != 0:      # Changing the animation timer for run animation
             self.ANIMATION_TIMER = 70
 
         else:
             self.ANIMATION_TIMER = 150
 
-        if move_left and not self.rect.left <= 0:
+        if move_left:
             dx = -self.velocity  # sets vel
             self.flip = True
             self.facing = -1  # for flipping
-        if move_right and not self.rect.right >= screen_width:
+        if move_right:
             dx = self.velocity
             self.flip = False
             self.facing = 1  # for flipping
@@ -86,16 +90,29 @@ class Player(pygame.sprite.Sprite):
 
         dy += self.jump_vel
 
-        # temp collision
+        for tile in main.level.tile_list:                           # New collision system - Checks before updating
 
-        if self.rect.bottom + dy > 480:
+            if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.player_width, self.player_height):
+                dx = 0
+
+            if tile[1].colliderect(self.rect.x, self.rect.y + dy, self.player_width, self.player_height):
+                if self.jump_vel < 0:
+                    dy = tile[1].bottom - self.rect.top
+                    self.jump_vel = 0
+
+                elif self.jump_vel >= 1:
+                    dy = tile[1].top - self.rect.bottom
+                    self.jump_vel = 0
+                    self.above_ground = False
+
+        """if self.rect.bottom + dy > 480:          # Old collision system
             dy = 480 - self.rect.bottom
-            self.above_ground = False
+            self.above_ground = False"""
 
         self.rect.x += dx
         self.rect.y += dy
 
-        self.debug_vel = dx, dy
+        self.current_vel = dx, dy
 
     def check_alive(self):
         if self.health <= 0:

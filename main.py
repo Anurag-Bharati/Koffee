@@ -14,6 +14,8 @@ pygame.mixer.init()
 pygame.init()
 
 pygame.display.set_caption("Koffee")
+
+
 font_impact = pygame.font.SysFont("Impact", 18)
 font_consolas = pygame.font.SysFont("consolas", 15)
 
@@ -24,25 +26,25 @@ gameClock = pygame.time.Clock()
 level_data = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1],
     [1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
     [1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
-    [1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
+    [1,1,1,1,5,5,5,5,5,5,5,5,5,5,0,0,0,5,0,0,5,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,5,5,0,0,0,0,0,0,0,0,0,1,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,5,0,0,0,0,0,1,1,1],
     [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,5,5,5,5,5,0,0,5,4,4,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,5,5,5,5,5,0,0,0,0,0,0,0,0,0,4,4,4,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,5,5,0,0,0,5,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,4,4,0,0,5,4,4,4,4,4,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,5,4,4,0,0,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,5,5,5,5,5,5,5,4,4,4,5,5,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,1,1,1],
     [1,1,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1],
     [1,1,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1,1,1,1],
     [1,1,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1,1,1,1],
-    [1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1],
     [1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1],
     [1,1,1,1,1,1,1,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,1,1,1,1,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -50,8 +52,8 @@ level_data = [
 
 #           >---------[CONSTANTS]---------<
 
-Window_Width = 1280     # 40 Tiles Width 32
-Window_Height = 720     # 24 Tiles Height 30
+Window_Width = 1280     # 40 Tiles Width of 32
+Window_Height = 720     # 24 Tiles Height of 30
 
 # COLORS
 
@@ -69,7 +71,7 @@ move_right = False
 
 # Debug tools
 
-flags = True  # Enable or disable full-screen mode
+flags = False  # Enable or disable full-screen mode
 grid = False
 debug = False
 
@@ -81,6 +83,9 @@ if flags:
 screen = pygame.display.set_mode((Window_Width, Window_Height), flags, 8, vsync=True)   # Size, flags, Color, verticalSy
 
 pygame.mouse.set_cursor(pygame.cursors.diamond)  # change cursor icon
+
+icon = pygame.image.load("assets/images/Koffee.png").convert_alpha()
+pygame.display.set_icon(icon)
 
 
 def update_fps():  # Function for fps-overlay
@@ -113,7 +118,7 @@ def event_handler():            # All Event handling here
 
         if Knight.above_ground:
             Player.change_action(Knight, new_action = 2)  # 2 = jump
-        elif move_right or move_left and not Knight.above_ground:
+        elif (move_right or move_left) and not Knight.above_ground and Knight.current_vel[0] != 0:
             Player.change_action(Knight, new_action = 1)  # 1 = run
         else:
             Player.change_action(Knight, new_action = 0)  # 0 = idle
@@ -161,7 +166,7 @@ def renderer():                 # All graphics here
     screen.fill(Cyan)
 
     Knight.draw(screen)
-    Knight.mov(Window_Width, move_left, move_right)
+    Knight.mov(move_left, move_right)
     Knight.update()
 
     level.draw(screen)
@@ -176,7 +181,7 @@ def renderer():                 # All graphics here
     screen.blit(update_fps(), (10, 3))     # Must be at last :)
 
 
-Knight = Player("player", 1, 100, 500, 1.25, 3)
+Knight = Player("player", 1, 150, 300, 1.25, 3)
 
 level = Earth(level_data)
 
@@ -203,7 +208,7 @@ def debug_stats():
     screen.blit(Knight_action, (10, 270))
     screen.blit(Knight_animation_index, (10, 290))
 
-    screen.blit(mouse_pos, (10, 320))
+    screen.blit(mouse_pos, (10, 330))
 
     screen.blit(game_uptime, (10, 350))
 
@@ -221,9 +226,10 @@ def debug_stats():
 
         playerMov = font_consolas.render(str(f"knight_moving:{move_left or move_right}"), True, White)
         Knight_location = font_consolas.render(str(f"knight_location:{Knight.rect.x, Knight.rect.y}"), True, White)
-        Knight_velocity = font_consolas.render(str(f"knight_vel:{Knight.debug_vel}"), True, White)
+        Knight_velocity = font_consolas.render(str(f"knight_vel:{Knight.current_vel}"), True, White)
         Knight_action = font_consolas.render(str(f"knight_action:{Knight.action}"), True, White)
         Knight_animation_index = font_consolas.render(str(f"knight_action_index:{Knight.animation_index}"), True, White)
+
         game_uptime = font_consolas.render(str(f"game_uptime: {Knight.update_time // 1000} (sec)"), True, White)
         mouse_pos = font_consolas.render(str(f"mouse_pos:{pygame.mouse.get_pos()}"), True, White)
 
@@ -231,7 +237,7 @@ def debug_stats():
 initial_time = pygame.time.get_ticks()
 
 debug_title = font_consolas.render(str("DEBUG_STAT"), True, White)
-game_info = font_consolas.render("version 1.2 | Dev(fe/be):210030", True, White)
+game_info = font_consolas.render("version 1.3 | Dev(fe/be):210030", True, White)
 
 res = (Window_Width, Window_Height)
 rawTick = font_consolas.render(str(f"praw_tick:{gameClock.get_rawtime()}"), True, White)
@@ -244,7 +250,7 @@ display_info = font_consolas.render(str(f"display_driver:{pygame.display.get_dri
 
 playerMov = font_consolas.render(str(f"knight_moving:{move_left or move_right}"), True, White)
 Knight_location = font_consolas.render(str(f"knight_location:{Knight.rect.x, Knight.rect.y}"), True, White)
-Knight_velocity = font_consolas.render(str(f"knight_vel:{Knight.debug_vel}"), True, White)
+Knight_velocity = font_consolas.render(str(f"knight_vel:{Knight.current_vel}"), True, White)
 Knight_action = font_consolas.render(str(f"knight_action:{Knight.action}"), True, White)
 Knight_animation_index = font_consolas.render(str(f"knight_action_index:{Knight.animation_index}"), True, White)
 
