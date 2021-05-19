@@ -1,4 +1,6 @@
 # All hostile blueprint here
+import random
+
 import pygame
 import os
 
@@ -10,8 +12,11 @@ class Enemy(pygame.sprite.Sprite):
         self.animation_list = []
         self.velocity = velocity
         self.update_time = pygame.time.get_ticks()
-        self.ANIMATION_TIMER = 60
+        self.ANIMATION_TIMER = 50
         self.enemy_scale = enemy_scale
+        self.MOVE_TIMER = 1000
+        self.move_unit = 0
+        self.update_mov = pygame.time.get_ticks()
 
         """self.image = pygame.image.load("assets/images/enemy/slime/0.png").convert_alpha()
         self.rect = self.image.get_rect()  # Creating a for self
@@ -41,4 +46,19 @@ class Enemy(pygame.sprite.Sprite):
             self.animation_index += 1  # increase the animation index
             if self.animation_index >= len(self.animation_list)-1:  # to prevent overflow
                 self.animation_index = 0
+
+        if pygame.time.get_ticks() - self.update_mov > (x := self.MOVE_TIMER + random.randint(-500, 500)):
+
+            self.rect.x += self.velocity
+            self.move_unit += 1
+            if abs(self.move_unit) > 50:
+                self.move_unit *= -1
+                self.velocity *= -1
+                self.update_mov = pygame.time.get_ticks()
+
+
+
+
+
+
 

@@ -7,6 +7,7 @@ from pygame.locals import *     # Importing pygame classes into global namespace
 import hud_grid
 from PlayerBluePrint import Player
 from level_generator import Earth, slime_group
+import enemy
 
 
 # [2] Init the pygame modules:
@@ -30,21 +31,21 @@ level_data = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1],
     [1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
-    [1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,7,0,0,0,0,1,1,1,1],
-    [1,1,1,1,5,5,5,5,5,5,5,5,5,5,0,0,0,5,0,0,5,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
+    [1,1,1,1,0,0,0,0,7,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
+    [1,1,1,1,5,5,5,5,5,5,5,5,5,5,0,0,0,0,0,0,5,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
     [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,5,5,0,0,0,0,0,0,0,0,0,1,1,1,1],
     [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,5,0,0,0,0,0,1,1,1],
     [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
     [1,1,1,0,0,0,0,0,0,0,5,5,5,5,5,0,0,5,4,4,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
     [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,5,5,5,5,5,0,0,0,0,0,0,0,0,0,4,4,4,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,5,5,0,0,0,5,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,4,4,0,0,5,4,4,4,3,4,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,5,4,4,0,0,4,4,4,4,3,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,5,5,5,5,5,5,5,4,4,4,5,5,4,4,4,3,3,3,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,1,1,1],
-    [1,1,1,4,4,4,4,4,4,4,4,4,4,4,4,4,4,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1],
+    [1,1,1,5,5,5,5,5,0,0,0,0,0,0,0,0,0,4,3,4,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,5,5,0,0,0,5,4,3,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,4,4,0,0,5,4,4,3,3,4,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,0,0,7,0,7,0,0,5,4,4,0,0,4,4,4,3,3,4,4,4,0,0,0,0,0,7,0,0,0,7,0,0,0,0,1,1,1],
+    [1,1,1,5,5,5,5,5,5,5,4,4,4,5,5,4,4,3,3,3,3,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,1,1,1],
+    [1,1,1,4,4,4,4,4,4,4,4,3,4,4,4,4,4,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1],
     [1,1,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1,1,1,1],
     [1,1,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1,1,1,1],
     [1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1],
@@ -63,6 +64,7 @@ White = (255, 255, 255)
 Black = (0, 0, 0)
 Red = (255, 0, 0)
 Cyan = (70, 194, 166)
+Deep_blue = (24, 20, 37)
 
 #           >---------[VARIABLES]---------<
 
@@ -77,7 +79,6 @@ flags = False  # Enable or disable full-screen mode
 grid = False
 debug = False
 
-mainloop = True
 
 # Creates a display
 
@@ -88,8 +89,7 @@ screen = pygame.display.set_mode((Window_Width, Window_Height), flags, 8, vsync=
 
 pygame.mouse.set_cursor(pygame.cursors.diamond)  # change cursor icon
 
-icon = pygame.image.load("assets/images/Koffee.png").convert_alpha()
-pygame.display.set_icon(icon)
+mainloop = True
 
 
 def update_fps():  # Function for fps-overlay
@@ -113,9 +113,12 @@ def update_fps():  # Function for fps-overlay
     return fps_text
 
 
+X_ani = 1
+
+
 def event_handler():            # All Event handling here
 
-    global move_right, move_left, debug, grid
+    global move_right, move_left, debug, grid, flags
 
     # Handling Animation
     if Knight.Alive:
@@ -136,7 +139,7 @@ def event_handler():            # All Event handling here
         if event.type == KEYDOWN:  # Triggered when key is pressed down
             if event.key == K_a:
                 move_left = True
-            if event.key == K_d:
+            elif event.key == K_d:
                 move_right = True
             if event.key == K_SPACE:
                 Knight.isJump = True
@@ -160,11 +163,16 @@ def event_handler():            # All Event handling here
             if event.key == K_a:
                 move_left = False
 
-            if event.key == K_d:
+            elif event.key == K_d:
                 move_right = False
 
 
+debug_Animation_Timer = pygame.time.get_ticks()
+
+
 def renderer():                 # All graphics here
+
+    global X_ani
 
     screen.fill(Cyan)
 
@@ -177,18 +185,32 @@ def renderer():                 # All graphics here
     slime_group.draw(screen)
     slime_group.update()
 
-    if grid:
-        hud_grid.draw_grid(screen, White, Window_Width, Window_Height, font_consolas)
-        pygame.draw.rect(screen, Red, Knight.rect, 1)
     if debug:
-        debug_stats()
+
+        screen.fill(pygame.Color(Deep_blue), (0, 0, X_ani, Window_Height))
+        X_ani += 10
+        X_ani *= 1.1
+
+        if X_ani > Window_Width*0.3:
+            X_ani = Window_Width*0.3
+            debug_stats()
+        pygame.draw.rect(screen, Red, Knight.rect, 1)
+    if not debug:
+        screen.fill(pygame.Color(Deep_blue), (0, 0, X_ani, Window_Height))
+        X_ani *= 0.9
+
+        if X_ani < -1:
+            X_ani = -1
+
+    if grid and not debug:
+        hud_grid.draw_grid(screen, White, Window_Width, Window_Height, font_consolas)
         pygame.draw.rect(screen, Red, Knight.rect, 1)
 
     screen.blit(update_fps(), (10, 3))     # Must be at last :)
     pygame.display.update()
 
 
-Knight = Player("player", 1, 150, 300, 1.25, 3)
+Knight = Player("player", 1, 150, 300, .9, 3)
 
 level = Earth(level_data)
 
@@ -218,6 +240,11 @@ def debug_stats():
     screen.blit(mouse_pos, (10, 330))
 
     screen.blit(game_uptime, (10, 350))
+
+    screen.blit(debugNote, (10, 380))
+    screen.blit(debugNote0, (10, 400))
+    screen.blit(debugNote1, (10, 420))
+    screen.blit(debugNote2, (10, 440))
 
     if pygame.time.get_ticks() - initial_time > debug_update_timer:
 
@@ -265,8 +292,17 @@ Knight_animation_index = font_consolas.render(str(f"knight_action_index:{Knight.
 game_uptime = font_consolas.render(str(f"game_uptime: {Knight.update_time // 1000} (sec)"), True, White)
 mouse_pos = font_consolas.render(str(f"mouse_pos:{pygame.mouse.get_pos()}"), True, White)
 
+debugNote = font_consolas.render(str("NOTES:"), True, White)
+debugNote0 = font_consolas.render(str("     Press \"TAB\" to collapse Debug Window."), True, White)
+debugNote1 = font_consolas.render(str("     Press \"LCTRL\" to toggle Grid View."), True, White)
+debugNote2 = font_consolas.render(str("     Press \"Esc\" to Exit the game."), True, White)
+
 
 if __name__ == "__main__":
+
+    icon = pygame.image.load("assets/images/Koffee.png").convert_alpha()
+
+    pygame.display.set_icon(icon)
 
     while mainloop:
 

@@ -75,7 +75,7 @@ class Earth:
                     self.tile_list.append(tile)
 
                 if tile == 7:
-                    slime = Enemy(at_column * grid_x, at_row*grid_y, 1, 1)
+                    slime = Enemy(at_column * grid_x, at_row*grid_y+5, random.choice([-1, 1]), .9)
                     slime_group.add(slime)
                     # For debug
                     slime_quantity += 1

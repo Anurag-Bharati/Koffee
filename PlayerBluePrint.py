@@ -67,14 +67,15 @@ class Player(pygame.sprite.Sprite):
         else:
             self.ANIMATION_TIMER = 150
 
-        if move_left:
-            dx = -self.velocity  # sets vel
-            self.flip = True
-            self.facing = -1  # for flipping
-        if move_right:
-            dx = self.velocity
-            self.flip = False
-            self.facing = 1  # for flipping
+        if move_left or move_right:
+            if move_left:
+                dx = -self.velocity  # sets vel
+                self.flip = True
+                self.facing = -1  # for flipping
+            if move_right:
+                dx = self.velocity
+                self.flip = False
+                self.facing = 1  # for flipping
 
         if self.isJump and not self.above_ground:
             self.jump_vel = -12
