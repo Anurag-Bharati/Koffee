@@ -3,8 +3,10 @@ import random
 
 
 from enemy import Enemy
+from not_standable import killBlock
 
 slime_group = pygame.sprite.Group()
+killable_blocks_group = pygame.sprite.Group()
 
 grid_x = 32
 grid_y = 30
@@ -79,8 +81,35 @@ class Earth:
                     slime_group.add(slime)
                     # For debug
                     slime_quantity += 1
+
+                if tile == 9:
+                    lava = killBlock("lava", at_column * grid_x, at_row*grid_y+16, 1, 0.5)
+                    killable_blocks_group.add(lava)
+
+                if tile == 10:
+                    lava = killBlock("lavab", at_column * grid_x, at_row*grid_y, 1, 1)
+                    killable_blocks_group.add(lava)
+
+                if tile == 11:
+                    spike = killBlock("spikeup", at_column * grid_x, at_row*grid_y+16, 1, 0.5)
+                    killable_blocks_group.add(spike)
+
+                if tile == 12:
+                    spike = killBlock("spikedown", at_column * grid_x, at_row*grid_y, 1, 0.5)
+                    killable_blocks_group.add(spike)
+
+                if tile == 14:
+                    spike = killBlock("watera", at_column * grid_x, at_row*grid_y+15, 1, 0.5)
+                    killable_blocks_group.add(spike)
+
+                if tile == 15:
+                    spike = killBlock("waterb", at_column * grid_x, at_row*grid_y, 1, 1)
+                    killable_blocks_group.add(spike)
+
                 at_column += 1
             at_row += 1
+
+
 
     def draw(self, Where):
 

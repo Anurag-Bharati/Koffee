@@ -6,7 +6,7 @@ from pygame.locals import *     # Importing pygame classes into global namespace
 
 import hud_grid
 from PlayerBluePrint import Player
-from level_generator import Earth, slime_group
+from level_generator import Earth, slime_group, killable_blocks_group
 import enemy
 
 
@@ -32,8 +32,8 @@ level_data = [
     [1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1],
     [1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
     [1,1,1,1,0,0,0,0,7,0,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
-    [1,1,1,1,5,5,5,5,5,5,5,5,5,5,0,0,0,0,0,0,5,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,5,5,0,0,0,0,0,0,0,0,0,1,1,1,1],
+    [1,1,1,1,5,5,5,5,5,5,5,5,5,5,0,0,0,0,0,0,5,5,5,11,11,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,5,5,0,0,11,0,0,0,0,0,0,1,1,1,1],
     [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,5,5,0,0,0,0,0,1,1,1],
     [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
     [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,1,1,1],
@@ -41,12 +41,12 @@ level_data = [
     [1,1,1,0,0,0,0,0,0,0,5,5,5,5,5,0,0,5,4,4,0,0,0,0,5,5,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
     [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
     [1,1,1,5,5,5,5,5,0,0,0,0,0,0,0,0,0,4,3,4,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,0,0,0,0,0,0,5,5,0,0,0,5,4,3,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,12,12,12,12,12,0,0,0,5,5,0,0,0,5,4,3,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
     [1,1,1,0,0,0,0,0,0,0,0,4,4,0,0,5,4,4,3,3,4,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1],
-    [1,1,1,0,0,7,0,7,0,0,5,4,4,0,0,4,4,4,3,3,4,4,4,0,0,0,0,0,7,0,0,0,7,0,0,0,0,1,1,1],
-    [1,1,1,5,5,5,5,5,5,5,4,4,4,5,5,4,4,3,3,3,3,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,1,1,1],
-    [1,1,1,4,4,4,4,4,4,4,4,3,4,4,4,4,4,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,1,1],
-    [1,1,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1,1,1,1],
+    [1,1,1,0,0,0,0,0,0,0,5,4,4,11,11,4,4,4,3,3,4,4,4,0,0,0,7,0,7,0,0,0,0,0,0,0,0,1,1,1],
+    [1,1,1,5,14,14,14,14,5,5,4,4,4,5,5,4,4,3,3,3,3,4,4,5,5,5,5,5,5,5,5,9,9,9,9,9,5,1,1,1],
+    [1,1,1,4,15,15,15,15,4,4,4,3,4,4,4,4,4,3,3,3,3,4,4,4,4,4,4,4,4,4,4,10,10,10,10,10,4,4,1,1],
+    [1,1,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1,1,1],
     [1,1,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1,1,1,1],
     [1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1],
     [1,1,1,1,1,1,1,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,1,1,1,1,1],
@@ -113,7 +113,7 @@ def update_fps():  # Function for fps-overlay
     return fps_text
 
 
-X_ani = 1
+debugWindow_X = 1
 
 
 def event_handler():            # All Event handling here
@@ -172,7 +172,7 @@ debug_Animation_Timer = pygame.time.get_ticks()
 
 def renderer():                 # All graphics here
 
-    global X_ani
+    global debugWindow_X
 
     screen.fill(Cyan)
 
@@ -185,22 +185,25 @@ def renderer():                 # All graphics here
     slime_group.draw(screen)
     slime_group.update()
 
+    killable_blocks_group.draw(screen)
+    killable_blocks_group.update()
+
     if debug:
 
-        screen.fill(pygame.Color(Deep_blue), (0, 0, X_ani, Window_Height))
-        X_ani += 10
-        X_ani *= 1.1
+        screen.fill(pygame.Color(Deep_blue), (0, 0, debugWindow_X, Window_Height))
+        debugWindow_X += 10
+        debugWindow_X *= 1.1
 
-        if X_ani > Window_Width*0.3:
-            X_ani = Window_Width*0.3
+        if debugWindow_X > Window_Width*0.3:
+            debugWindow_X = Window_Width * 0.3
             debug_stats()
         pygame.draw.rect(screen, Red, Knight.rect, 1)
     if not debug:
-        screen.fill(pygame.Color(Deep_blue), (0, 0, X_ani, Window_Height))
-        X_ani *= 0.9
+        screen.fill(pygame.Color(Deep_blue), (0, 0, debugWindow_X, Window_Height))
+        debugWindow_X *= 0.9
 
-        if X_ani < -1:
-            X_ani = -1
+        if debugWindow_X < -1:
+            debugWindow_X = -1
 
     if grid and not debug:
         hud_grid.draw_grid(screen, White, Window_Width, Window_Height, font_consolas)
@@ -272,7 +275,7 @@ initial_time = pygame.time.get_ticks()
 
 debug_title = font_consolas.render(str("DEBUG_STAT"), True, White)
 
-game_info = font_consolas.render("version 1.3 | Dev(fe/be):210030", True, White)
+game_info = font_consolas.render("version 1.4 | Dev(fe/be):210030", True, White)
 
 res = (Window_Width, Window_Height)
 rawTick = font_consolas.render(str(f"praw_tick:{gameClock.get_rawtime()}"), True, White)

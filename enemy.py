@@ -24,7 +24,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.y = yPos"""
 
         os_count_frame = len(os.listdir(f"assets/images/enemy/slime"))
-        for i in range(os_count_frame - 1):
+        for i in range(os_count_frame):
             enemy_img = pygame.image.load(f'assets/images/enemy/slime/{i}.png')
             enemy_img = pygame.transform.scale(enemy_img,  # SCALING happens here
                                                (int(enemy_img.get_width() * self.enemy_scale),

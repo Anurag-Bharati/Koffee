@@ -34,7 +34,7 @@ class Player(pygame.sprite.Sprite):
 
             os_count_frame = len(os.listdir(f"assets/images/{self.player_type}/{animation}"))
 
-            for i in range(os_count_frame-1):
+            for i in range(os_count_frame):
                 player_img = pygame.image.load(f'assets/images/{self.player_type}/{animation}/{i}.png')
                 player_img = pygame.transform.scale(player_img,  # SCALING happens here
                                                     (int(player_img.get_width() * player_scale),
