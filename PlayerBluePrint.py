@@ -4,16 +4,20 @@ from level_generator import killable_blocks_group, slime_group
 
 
 GRAVITY = 0.75
-GAME_OVER = 0
+GAME_SCENE = 0
 
 
 class Player(pygame.sprite.Sprite):
 
     def __init__(self, player_type, health, xPos, yPos, player_scale, velocity):
-
-        global GAME_OVER
-
         pygame.sprite.Sprite.__init__(self)
+
+        self.reset(player_type, health, xPos, yPos, player_scale, velocity)
+
+    def reset(self, player_type, health, xPos, yPos, player_scale, velocity):
+
+        global GAME_SCENE
+
         self.current_vel = 0, 0
         self.Alive = True
         self.health = health
@@ -23,7 +27,7 @@ class Player(pygame.sprite.Sprite):
         self.flip = False
         self.velocity = velocity
         self.jump_vel = 0
-        self.terminal_vel = 20   # Max y_vel while falling 20
+        self.terminal_vel = 20  # Max y_vel while falling 20
         self.isJump = False
         self.above_ground = True
         self.animation_list = []  # Stores all the animations
@@ -49,14 +53,14 @@ class Player(pygame.sprite.Sprite):
                 player_img = pygame.transform.scale(player_img,  # SCALING happens here
                                                     (int(player_img.get_width() * player_scale),
                                                      int(player_img.get_height() * player_scale)))
-                player_img.convert_alpha()              # Optimizing
+                player_img.convert_alpha()  # Optimizing
                 animation_cache.append(player_img)
             self.animation_list.append(animation_cache)
 
-#       print(self.animation_list)
+        #       print(self.animation_list)
         self.player_image = self.animation_list[self.action][self.animation_index]
-        self.rect = self.player_image.get_rect()     # Creating a for self
-        self.rect.center = (xPos, yPos)                 # setting the rect location to player's loc
+        self.rect = self.player_image.get_rect()  # Creating a for self
+        self.rect.center = (xPos, yPos)  # setting the rect location to player's loc
         self.player_width = self.player_image.get_width()
         self.player_height = self.player_image.get_height()
 
@@ -67,7 +71,7 @@ class Player(pygame.sprite.Sprite):
 
     def mov(self, move_left, move_right, What):  # htf its showing this? not a error skip.
 
-        global GAME_OVER
+        global GAME_SCENE
 
         # Resets mov var
         dx = 0  # Created to assign the change
@@ -134,15 +138,18 @@ class Player(pygame.sprite.Sprite):
                 and (pygame.time.get_ticks() - self.startingtime > self.damage_cooldown):
             self.startingtime = pygame.time.get_ticks()
             self.health -= 1
+
             self.isJump = True
+
             self.damage_cooldown = 2000
-            if self.health >= 4:
+
+            if self.health == 2:
                 self.animation_list[0][0].set_alpha(220)
-            if 2 <= self.health < 4:
-                self.animation_list[0][0].set_alpha(150)
-            if self.health < 2:
+            if self.health <= 1:
+                self.animation_list[0][0].set_alpha(80)
                 self.animation_list[0][2].set_alpha(80)
-            print(self.health)
+
+
 
         """if self.rect.bottom + dy > 480:          # Old collision system
             dy = 480 - self.rect.bottom

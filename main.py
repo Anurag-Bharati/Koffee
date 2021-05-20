@@ -1,13 +1,13 @@
 # [1] Importing the Modules
 
-import sys, time
+import sys,math,time
 import pygame
 from pygame.locals import *     # Importing pygame classes into global namespace :V Lol what?
 
 import hud_grid
-from PlayerBluePrint import Player, GAME_OVER
+from PlayerBluePrint import Player, GAME_SCENE
 from level_generator import Earth, slime_group, killable_blocks_group
-import enemy
+from buttons import Button
 
 
 # [2] Init the pygame modules:
@@ -20,6 +20,7 @@ pygame.display.set_caption("Koffee")
 
 font_impact = pygame.font.SysFont("Impact", 18)
 font_consolas = pygame.font.SysFont("consolas", 15)
+
 
 # [3] Setting up a pause sys for main loop so that game match the given frame-rate:
 
@@ -75,14 +76,16 @@ move_right = False
 
 # Debug tools
 
-flags = False  # Enable or disable full-screen mode
+fs = False  # Enable or disable full-screen mode
 grid = False
 debug = False
-
+MainMenu = True
+sChange = False
+audiomute = True
 
 # Creates a display
-
-if flags:
+flags = 0
+if fs:
     flags = HWSURFACE | DOUBLEBUF | FULLSCREEN
 
 screen = pygame.display.set_mode((Window_Width, Window_Height), flags, 8, vsync=True)   # Size, flags, Color, verticalSy
@@ -169,19 +172,21 @@ def event_handler():            # All Event handling here
 
 
 debug_Animation_Timer = pygame.time.get_ticks()
+Transition = 0
+blackout_Timer = pygame.time.get_ticks()
 
 
 def renderer():                 # All graphics here
 
-    global debugWindow_X
+    global debugWindow_X, Transition, blackout_Timer, MainMenu, audiomute
 
     screen.fill(Cyan)
 
     Knight.draw(screen)
-    if Knight.Alive:
+    if Knight.Alive and not MainMenu:
+
         Knight.mov(move_left, move_right, level)
     Knight.update()
-
     level.draw(screen)
 
     slime_group.draw(screen)
@@ -190,6 +195,46 @@ def renderer():                 # All graphics here
     killable_blocks_group.draw(screen)
     killable_blocks_group.update()
 
+    if Knight.Alive:
+
+        if pygame.time.get_ticks() - blackout_Timer > 10:
+            blackout_Timer = pygame.time.get_ticks()
+
+            Transition *= 0.96
+            if Transition <= 0:
+                Transition = 0
+
+        main_bg1.set_alpha(Transition)
+        screen.blit(main_bg1, (0, 0))
+
+    elif not Knight.Alive and not MainMenu:
+
+        if pygame.time.get_ticks() - blackout_Timer > 10:
+            blackout_Timer = pygame.time.get_ticks()
+            Transition += 1
+            Transition *= 1.08
+            if Transition >= 150:
+                Transition = 150
+        main_bg.set_alpha(Transition)
+        screen.blit(main_bg, (0, 0))
+
+        if Transition == 150 and not Knight.Alive:                                   # RESETS HERE
+            if restart_btn.draw(screen):
+                Knight.reset("player", 3, 150, 300, .9, 3)
+                Knight.Alive = True
+
+            elif menu_btn.draw(screen) and not MainMenu:
+
+                Knight.reset("player", 3, 150, 300, .9, 3)
+                MainMenu = True
+                Transition = 0
+
+            if audio_btn1.draw(screen):
+                audiomute = not audiomute
+                if audiomute:
+                    pygame.mixer.music.stop()
+                else:
+                    pygame.mixer.music.play(-1)
     if debug:
 
         screen.fill(pygame.Color(Deep_blue), (0, 0, debugWindow_X, Window_Height))
@@ -200,7 +245,9 @@ def renderer():                 # All graphics here
             debugWindow_X = Window_Width * 0.3
             debug_stats()
         pygame.draw.rect(screen, Red, Knight.rect, 1)
+
     if not debug:
+
         screen.fill(pygame.Color(Deep_blue), (0, 0, debugWindow_X, Window_Height))
         debugWindow_X *= 0.9
 
@@ -212,12 +259,103 @@ def renderer():                 # All graphics here
         pygame.draw.rect(screen, Red, Knight.rect, 1)
 
     screen.blit(update_fps(), (10, 3))     # Must be at last :)
+
     pygame.display.update()
 
 
-Knight = Player("player", 5, 150, 300, .9, 3)
+def main_menu():
+    global Transition, blackout_Timer, MainMenu, sChange, mainloop, fs, audiomute, flags, screen
+    screen.fill(Cyan)
+
+    if fs:
+        flags = HWSURFACE | DOUBLEBUF | FULLSCREEN
+    else:
+        flags = 0
+
+    screen.blit(logo, (
+        Window_Width//2 - logo.get_width()//2,
+        Window_Height//4 - logo.get_height()/2 + math.sin(time.time()*5)*5 - 25))
+
+    if fs_btn.draw(screen):
+        fs = not fs
+        if fs:
+            screen = pygame.display.set_mode((Window_Width, Window_Height), flags, 8, vsync = True)
+        else:
+            screen = pygame.display.set_mode((Window_Width, Window_Height), flags, 8, vsync = True)
+
+    if audio_btn.draw(screen):
+        audiomute = not audiomute
+        if audiomute:
+            pygame.mixer.music.stop()
+        else:
+            pygame.mixer.music.play(-1)
+
+    if start_btn.draw(screen) and Transition == 0:
+        sChange = True
+
+    if sChange:
+        if pygame.time.get_ticks() - blackout_Timer > 10:
+            blackout_Timer = pygame.time.get_ticks()
+            Transition += 1
+            Transition *= 1.05
+            if Transition >= 150:
+                Transition = 150
+                sChange = False
+                MainMenu = False
+    if exit_btn.draw(screen) and MainMenu:
+        mainloop = False
+
+    main_bg1.set_alpha(Transition)
+    screen.blit(main_bg1, (0, 0))
+
+    pygame.display.update()
+
+    return flags
+
+
+main_bg = pygame.image.load("assets/images/mainbg.png").convert_alpha()
+main_bg1 = pygame.image.load("assets/images/mainbg1.png").convert_alpha()
+restart_button = pygame.image.load("assets/images/buttons/restart.png").convert_alpha()
+start_button = pygame.image.load("assets/images/buttons/start.png").convert_alpha()
+exit_button = pygame.image.load("assets/images/buttons/exit.png").convert_alpha()
+menu_button = pygame.image.load("assets/images/buttons/menu.png").convert_alpha()
+fs_button = pygame.image.load("assets/images/buttons/fullscreen.png").convert_alpha()
+audio_button = pygame.image.load("assets/images/buttons/audio.png").convert_alpha()
+logo = pygame.image.load("assets/images/logoKoffee.png")
+logo = pygame.transform.scale(logo, (logo.get_width()//3, logo.get_height()//3)).convert_alpha()
+
+pygame.mixer.music.load("assets/audio/KoffeeOST.mp3")
+pygame.mixer.music.set_volume(0.1)
+
+Knight = Player("player", 3, 150, 300, .9, 3)
 
 level = Earth(level_data)
+
+start_btn = Button(
+    Window_Width//2 - start_button.get_width()//4,
+    Window_Height//2 - start_button.get_height()//4, start_button, .5)
+
+restart_btn = Button(
+    Window_Width//2 - restart_button.get_width()//4,
+    Window_Height//2 - restart_button.get_height()//4, restart_button, .5)
+exit_btn = Button(
+    Window_Width//2 - exit_button.get_width()//4,
+    Window_Height//2 + exit_button.get_height()//1.5, exit_button, .5)
+menu_btn = Button(
+    Window_Width//1.21,
+    Window_Height//1.25, menu_button, .35)
+
+fs_btn = Button(
+    Window_Width//2 - fs_button.get_width()//3,
+    Window_Height//2 + fs_button.get_height()//3.2, fs_button, .3)
+
+audio_btn = Button(
+    Window_Width//2 + audio_button.get_width()//12 - audio_button.get_width()//24,
+    Window_Height//2 + audio_button.get_height()//3.2, audio_button, .3)
+
+audio_btn1 = Button(
+    Window_Width//2 - audio_button.get_width()//6.65,
+    Window_Height//2 + audio_button.get_height()//3.2, audio_button, .3)
 
 
 def debug_stats():
@@ -308,14 +446,19 @@ if __name__ == "__main__":
     icon = pygame.image.load("assets/images/Koffee.png").convert_alpha()
 
     pygame.display.set_icon(icon)
-
+    last_time = time.time()
     while mainloop:
 
         gameClock.tick(FPS)
 
         event_handler()
 
-        renderer()
+        if MainMenu:
+            main_menu()
+
+        if not MainMenu:
+            renderer()
+
     pygame.mixer.quit()
     pygame.quit()
 
