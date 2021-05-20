@@ -5,7 +5,7 @@ import pygame
 from pygame.locals import *     # Importing pygame classes into global namespace :V Lol what?
 
 import hud_grid
-from PlayerBluePrint import Player
+from PlayerBluePrint import Player, GAME_OVER
 from level_generator import Earth, slime_group, killable_blocks_group
 import enemy
 
@@ -129,7 +129,8 @@ def event_handler():            # All Event handling here
             Player.change_action(Knight, new_action = 1)  # 1 = run
         else:
             Player.change_action(Knight, new_action = 0)  # 0 = idle
-
+    if not Knight.Alive:
+        Player.change_action(Knight, new_action = 3)
     for event in pygame.event.get():
 
         if event.type == pygame.QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
@@ -177,7 +178,8 @@ def renderer():                 # All graphics here
     screen.fill(Cyan)
 
     Knight.draw(screen)
-    Knight.mov(move_left, move_right, level)
+    if Knight.Alive:
+        Knight.mov(move_left, move_right, level)
     Knight.update()
 
     level.draw(screen)
@@ -213,7 +215,7 @@ def renderer():                 # All graphics here
     pygame.display.update()
 
 
-Knight = Player("player", 1, 150, 300, .9, 3)
+Knight = Player("player", 5, 150, 300, .9, 3)
 
 level = Earth(level_data)
 
@@ -275,7 +277,7 @@ initial_time = pygame.time.get_ticks()
 
 debug_title = font_consolas.render(str("DEBUG_STAT"), True, White)
 
-game_info = font_consolas.render("version 1.4 | Dev(fe/be):210030", True, White)
+game_info = font_consolas.render("version 1.5 | Dev(fe/be):210030", True, White)
 
 res = (Window_Width, Window_Height)
 rawTick = font_consolas.render(str(f"praw_tick:{gameClock.get_rawtime()}"), True, White)

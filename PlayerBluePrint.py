@@ -1,12 +1,18 @@
 import pygame
 import os
+from level_generator import killable_blocks_group, slime_group
+
 
 GRAVITY = 0.75
+GAME_OVER = 0
 
 
 class Player(pygame.sprite.Sprite):
 
     def __init__(self, player_type, health, xPos, yPos, player_scale, velocity):
+
+        global GAME_OVER
+
         pygame.sprite.Sprite.__init__(self)
         self.current_vel = 0, 0
         self.Alive = True
@@ -24,6 +30,10 @@ class Player(pygame.sprite.Sprite):
         self.animation_index = 0  # used to change index and make an animation
         self.action = 0  # used to change action
         self.update_time = pygame.time.get_ticks()  # used to make timer
+
+        self.startingtime = pygame.time.get_ticks()
+
+        self.damage_cooldown = 0
 
         self.ANIMATION_TIMER = 125  # when to update (in ms)
 
@@ -57,6 +67,8 @@ class Player(pygame.sprite.Sprite):
 
     def mov(self, move_left, move_right, What):  # htf its showing this? not a error skip.
 
+        global GAME_OVER
+
         # Resets mov var
         dx = 0  # Created to assign the change
         dy = 0
@@ -67,7 +79,7 @@ class Player(pygame.sprite.Sprite):
         else:
             self.ANIMATION_TIMER = 150
 
-        if move_left or move_right:
+        if move_left or move_right and self.Alive:
             if move_left:
                 dx = -self.velocity  # sets vel
                 self.flip = True
@@ -104,6 +116,34 @@ class Player(pygame.sprite.Sprite):
                     self.jump_vel = 0
                     self.above_ground = False
 
+        if pygame.sprite.spritecollide(self, killable_blocks_group, False) \
+                and (pygame.time.get_ticks() - self.startingtime > self.damage_cooldown):
+            self.startingtime = pygame.time.get_ticks()
+            self.health -= 1
+            self.isJump = True
+            self.damage_cooldown = 3000
+            if self.health >= 4:
+                self.animation_list[0][0].set_alpha(220)
+            if 2 <= self.health < 4:
+                self.animation_list[0][0].set_alpha(150)
+            if self.health < 2:
+                self.animation_list[0][2].set_alpha(80)
+            print(self.health)
+
+        if pygame.sprite.spritecollide(self, slime_group, False) \
+                and (pygame.time.get_ticks() - self.startingtime > self.damage_cooldown):
+            self.startingtime = pygame.time.get_ticks()
+            self.health -= 1
+            self.isJump = True
+            self.damage_cooldown = 2000
+            if self.health >= 4:
+                self.animation_list[0][0].set_alpha(220)
+            if 2 <= self.health < 4:
+                self.animation_list[0][0].set_alpha(150)
+            if self.health < 2:
+                self.animation_list[0][2].set_alpha(80)
+            print(self.health)
+
         """if self.rect.bottom + dy > 480:          # Old collision system
             dy = 480 - self.rect.bottom
             self.above_ground = False"""
@@ -118,7 +158,7 @@ class Player(pygame.sprite.Sprite):
             self.health = 0
             self.velocity = 0
             self.Alive = False
-            self.change_action(2)
+            self.change_action(3)
 
     def draw(self, Where):
         Where.blit(pygame.transform.flip(self.player_image, self.flip, False), self.rect)
@@ -131,7 +171,10 @@ class Player(pygame.sprite.Sprite):
             self.update_time = pygame.time.get_ticks()  # resets the update_time
             self.animation_index += 1  # increase the animation index
             if self.animation_index >= len(self.animation_list[self.action]):  # to prevent overflow
-                self.animation_index = 0
+                if self.action == 3:
+                    self.animation_index = len(self.animation_list[self.action]) -1
+                else:
+                    self.animation_index = 0
 
     def change_action(self, new_action):  # changes action
 

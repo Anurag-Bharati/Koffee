@@ -110,7 +110,6 @@ class Earth:
             at_row += 1
 
 
-
     def draw(self, Where):
 
         for tile in self.tile_list:
