@@ -1,17 +1,19 @@
 # [1] Importing the Modules
 
-import sys,math,time
+import sys, math, time, os
 import pygame
 from pygame.locals import *     # Importing pygame classes into global namespace :V Lol what?
+import pickle
 
+import PlayerBluePrint
 import hud_grid
-from PlayerBluePrint import Player, GAME_SCENE
-from level_generator import Earth, slime_group, killable_blocks_group
+from PlayerBluePrint import Player
+
+from level_generator import Earth, slime_group, killable_blocks_group, gate_group
 from buttons import Button
 
 
 # [2] Init the pygame modules:
-
 pygame.mixer.init()
 pygame.init()
 
@@ -24,10 +26,11 @@ font_consolas = pygame.font.SysFont("consolas", 15)
 
 # [3] Setting up a pause sys for main loop so that game match the given frame-rate:
 
-
+WIN = PlayerBluePrint.WIN
 gameClock = pygame.time.Clock()
+current_level = 0
 
-level_data = [
+level_dat = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1],
@@ -80,17 +83,23 @@ fs = False  # Enable or disable full-screen mode
 grid = False
 debug = False
 MainMenu = True
-sChange = False
-audiomute = True
+sChange = False     # used for Transitions
+audiomute = True   # mute's audio.. used for toggle
+reset = False   # Resets player with the key 'R'
+
 
 # Creates a display
 flags = 0
 if fs:
     flags = HWSURFACE | DOUBLEBUF | FULLSCREEN
 
-screen = pygame.display.set_mode((Window_Width, Window_Height), flags, 8, vsync=True)   # Size, flags, Color, verticalSy
+screen = pygame.display.set_mode((Window_Width, Window_Height), flags, 32, vsync=True)  # Size, flags, Color, verticalSy
 
 pygame.mouse.set_cursor(pygame.cursors.diamond)  # change cursor icon
+
+icon = pygame.image.load("assets/images/Koffee.png").convert_alpha()
+
+pygame.display.set_icon(icon)
 
 mainloop = True
 
@@ -121,7 +130,9 @@ debugWindow_X = 1
 
 def event_handler():            # All Event handling here
 
-    global move_right, move_left, debug, grid, flags
+    global move_right, move_left, debug, grid, flags, reset, WIN
+
+    WIN = PlayerBluePrint.WIN
 
     # Handling Animation
     if Knight.Alive:
@@ -147,6 +158,8 @@ def event_handler():            # All Event handling here
                 move_right = True
             if event.key == K_SPACE:
                 Knight.isJump = True
+            if event.key == K_r:
+                reset = True
 
             if event.key == K_TAB:
                 if not debug:
@@ -178,7 +191,7 @@ blackout_Timer = pygame.time.get_ticks()
 
 def renderer():                 # All graphics here
 
-    global debugWindow_X, Transition, blackout_Timer, MainMenu, audiomute
+    global debugWindow_X, Transition, blackout_Timer, MainMenu, audiomute, reset, current_level, WIN
 
     screen.fill(Cyan)
 
@@ -195,17 +208,46 @@ def renderer():                 # All graphics here
     killable_blocks_group.draw(screen)
     killable_blocks_group.update()
 
+    gate_group.draw(screen)
+
     if Knight.Alive:
 
-        if pygame.time.get_ticks() - blackout_Timer > 10:
-            blackout_Timer = pygame.time.get_ticks()
-
-            Transition *= 0.96
-            if Transition <= 0:
+        if reset:
+            if pygame.time.get_ticks() - blackout_Timer > 10:
+                blackout_Timer = pygame.time.get_ticks()
+                Transition += 1
+                Transition *= 1.35
+                if Transition >= 150:
+                    Transition = 150
+            main_bg1.set_alpha(Transition)
+            screen.blit(main_bg1, (0, 0))
+            if Transition == 150:
                 Transition = 0
+                Knight.Alive = False
+                reset = False
 
-        main_bg1.set_alpha(Transition)
-        screen.blit(main_bg1, (0, 0))
+        if WIN:
+            if pygame.time.get_ticks() - blackout_Timer > 10:
+                blackout_Timer = pygame.time.get_ticks()
+                Transition += 1
+                Transition *= 1.35
+                if Transition >= 150:
+                    Transition = 150
+            main_bg1.set_alpha(Transition)
+            screen.blit(main_bg1, (0, 0))
+            if Transition == 150:
+                Knight.reset("player", 3, 150, 300, .9, 3)
+                cleanup()
+        else:
+            if pygame.time.get_ticks() - blackout_Timer > 10:
+                blackout_Timer = pygame.time.get_ticks()
+
+                Transition *= 0.96
+                if Transition <= 0:
+                    Transition = 0
+
+            main_bg1.set_alpha(Transition)
+            screen.blit(main_bg1, (0, 0))
 
     elif not Knight.Alive and not MainMenu:
 
@@ -271,7 +313,6 @@ def main_menu():
         flags = HWSURFACE | DOUBLEBUF | FULLSCREEN
     else:
         flags = 0
-
     screen.blit(logo, (
         Window_Width//2 - logo.get_width()//2,
         Window_Height//4 - logo.get_height()/2 + math.sin(time.time()*5)*5 - 25))
@@ -313,6 +354,19 @@ def main_menu():
     return flags
 
 
+def cleanup():
+    global WIN, level, level_data, pickle_opn, current_level
+    WIN = False
+    current_level += 1
+    if os.path.exists(f"assets/levels/level{current_level}.dat"):
+        slime_group.empty()
+        killable_blocks_group.empty()
+        gate_group.empty()
+        with open(f"assets/levels/level{current_level}.dat", "rb") as pickle_opn:
+            level_data = pickle.load(pickle_opn)
+        level = Earth(level_data)
+
+
 main_bg = pygame.image.load("assets/images/mainbg.png").convert_alpha()
 main_bg1 = pygame.image.load("assets/images/mainbg1.png").convert_alpha()
 restart_button = pygame.image.load("assets/images/buttons/restart.png").convert_alpha()
@@ -329,7 +383,11 @@ pygame.mixer.music.set_volume(0.1)
 
 Knight = Player("player", 3, 150, 300, .9, 3)
 
-level = Earth(level_data)
+if os.path.exists(f"assets/levels/level{current_level}.dat"):
+    pickle_opn = open(f"assets/levels/level{current_level}.dat", "rb")
+    level_data = pickle.load(pickle_opn)
+    level = Earth(level_data)
+    pickle_opn.close()
 
 start_btn = Button(
     Window_Width//2 - start_button.get_width()//4,
@@ -370,24 +428,24 @@ def debug_stats():
     screen.blit(gameFps, (10, 90))
     screen.blit(gameTime, (10, 110))
     screen.blit(rawTick, (150, 110))
-    screen.blit(gameTick, (250, 110))
-    screen.blit(activeFlags, (10, 130))
-    screen.blit(gameRes, (10, 150))
-    screen.blit(display_info, (10, 180))
-    screen.blit(playerMov, (10, 210))
-    screen.blit(Knight_location, (10, 230))
-    screen.blit(Knight_velocity, (10, 250))
-    screen.blit(Knight_action, (10, 270))
-    screen.blit(Knight_animation_index, (10, 290))
+    screen.blit(gameTick, (10, 130))
+    screen.blit(activeFlags, (10, 150))
+    screen.blit(gameRes, (10, 180))
+    screen.blit(display_info, (10, 210))
+    screen.blit(playerMov, (10, 230))
+    screen.blit(Knight_location, (10, 250))
+    screen.blit(Knight_velocity, (10, 270))
+    screen.blit(Knight_action, (10, 290))
+    screen.blit(Knight_animation_index, (10, 310))
 
-    screen.blit(mouse_pos, (10, 330))
+    screen.blit(mouse_pos, (10, 350))
 
-    screen.blit(game_uptime, (10, 350))
+    screen.blit(game_uptime, (10, 380))
 
-    screen.blit(debugNote, (10, 380))
-    screen.blit(debugNote0, (10, 400))
-    screen.blit(debugNote1, (10, 420))
-    screen.blit(debugNote2, (10, 440))
+    screen.blit(debugNote, (10, 400))
+    screen.blit(debugNote0, (10, 420))
+    screen.blit(debugNote1, (10, 440))
+    screen.blit(debugNote2, (10, 460))
 
     if pygame.time.get_ticks() - initial_time > debug_update_timer:
 
@@ -397,7 +455,7 @@ def debug_stats():
 
         rawTick = font_consolas.render(str(f"praw_tick:{gameClock.get_rawtime()}"), True, White)
         gameTime = font_consolas.render(str(f"previous_tick:{gameClock.get_time()}"), True, White)
-        gameTick = font_consolas.render(str(f"game_tick:{pygame.time.get_ticks()}"), True, White)
+        gameTick = font_consolas.render(str(f"game_tick:{pygame.time.get_ticks().__round__(5)}"), True, White)
         gameFps = font_consolas.render(str(f"frame_per_sec:{gameClock.get_fps().__round__(5)}"), True, White)
         activeFlags = font_consolas.render(str(f"active_flags:{screen.get_flags()}"), True, White)
 
@@ -415,7 +473,7 @@ initial_time = pygame.time.get_ticks()
 
 debug_title = font_consolas.render(str("DEBUG_STAT"), True, White)
 
-game_info = font_consolas.render("version 1.5 | Dev(fe/be):210030", True, White)
+game_info = font_consolas.render("version 1.7 | Dev(fe/be):210030", True, White)
 
 res = (Window_Width, Window_Height)
 rawTick = font_consolas.render(str(f"praw_tick:{gameClock.get_rawtime()}"), True, White)
@@ -443,9 +501,6 @@ debugNote2 = font_consolas.render(str("     Press \"Esc\" to Exit the game."), T
 
 if __name__ == "__main__":
 
-    icon = pygame.image.load("assets/images/Koffee.png").convert_alpha()
-
-    pygame.display.set_icon(icon)
     last_time = time.time()
     while mainloop:
 
@@ -464,3 +519,8 @@ if __name__ == "__main__":
 
 else:
     mainloop = False
+# -2 - name
+# 0 - menu
+# 1 - game
+# -1 - dead
+# 2 - Victory
