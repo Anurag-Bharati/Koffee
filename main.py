@@ -9,7 +9,7 @@ import PlayerBluePrint
 import hud_grid
 from PlayerBluePrint import Player
 
-from level_generator import Earth, slime_group, killable_blocks_group, gate_group
+from level_generator import Earth, slime_group, killable_blocks_group, gate_group, coin_group, koffee_group
 from buttons import Button
 
 
@@ -89,6 +89,9 @@ audiomute = True   # mute's audio.. used for toggle
 reset = False   # Resets player with the key 'R'
 portal_fx = True
 death_fx = True
+
+play_ambiance = False
+stop_ambiance = False
 
 
 volume = 0.1
@@ -199,9 +202,15 @@ blackout_Timer = pygame.time.get_ticks()
 def renderer():                 # All graphics here
 
     global debugWindow_X, Transition, blackout_Timer, MainMenu, audiomute, reset, current_level, WIN, portal_fx,\
-        death_fx, volume
+        death_fx, volume, play_ambiance, stop_ambiance
 
     screen.fill(Cyan)
+
+    coin_group.draw(screen)
+    coin_group.update()
+
+    koffee_group.draw(screen)
+    koffee_group.update()
 
     gate_group.draw(screen)
     gate_group.update()
@@ -330,15 +339,22 @@ def renderer():                 # All graphics here
         hud_grid.draw_grid(screen, White, Window_Width, Window_Height, font_consolas)
         pygame.draw.rect(screen, Red, Knight.rect, 1)
 
+    if play_ambiance and not MainMenu:
+        play_ambiance = False
+        ambiance.play(-1)
+
     screen.blit(update_fps(), (10, 3))     # Must be at last :)
 
     pygame.display.update()
 
 
 def main_menu():
-    global Transition, blackout_Timer, MainMenu, sChange, mainloop, fs, audiomute, flags, screen, volume
+    global Transition, blackout_Timer, MainMenu, sChange, mainloop, fs, audiomute, flags, screen, volume,\
+        stop_ambiance, play_ambiance
     screen.fill(Cyan)
     Knight.Alive = False
+
+    ambiance.fadeout(1000)
 
     if fs:
         flags = HWSURFACE | DOUBLEBUF | FULLSCREEN
@@ -363,6 +379,7 @@ def main_menu():
             pygame.mixer.music.play(-1, 0.0, 500)
 
     if start_btn.draw(screen) and Transition == 0:
+        play_ambiance = True
         sChange = True
 
     if sChange:
@@ -411,15 +428,20 @@ audio_button = pygame.image.load("assets/images/buttons/audio.png").convert_alph
 logo = pygame.image.load("assets/images/logoKoffee.png")
 logo = pygame.transform.scale(logo, (logo.get_width()//3, logo.get_height()//3)).convert_alpha()
 
-pygame.mixer.music.load("assets/audio/KoffeeOST.mp3")
+pygame.mixer.music.load("assets/audio/Koffee_ost.mp3")
 pygame.mixer.music.set_volume(volume)
 
+ambiance = pygame.mixer.Sound("assets/audio/Ambiance.mp3")
+ambiance.set_volume(0.75)
+
 portal_sfx = pygame.mixer.Sound("assets/audio/sfx/portal.wav")
-portal_sfx.set_volume(0.5)
+portal_sfx.set_volume(0.6)
 
 Knight = Player("player", 3, 150, 300, .9, 3)
+
 jump_sfx = pygame.mixer.Sound("assets/audio/sfx/knight_jump.wav")
-jump_sfx.set_volume(0.25)
+jump_sfx.set_volume(0.40)
+
 
 death_sfx = pygame.mixer.Sound("assets/audio/sfx/knight_dead.wav")
 death_sfx.set_volume(0.5)
@@ -514,7 +536,7 @@ initial_time = pygame.time.get_ticks()
 
 debug_title = font_consolas.render(str("DEBUG_STAT"), True, White)
 
-game_info = font_consolas.render("version Alpha-1.8 | Dev(fe/be):210030", True, White)
+game_info = font_consolas.render("version Alpha-1.9 | Dev(fe/be):210030", True, White)
 
 res = (Window_Width, Window_Height)
 rawTick = font_consolas.render(str(f"praw_tick:{gameClock.get_rawtime()}"), True, White)

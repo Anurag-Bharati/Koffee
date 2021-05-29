@@ -5,10 +5,13 @@ import random
 from enemy import Enemy
 from not_standable import killBlock
 from change_level import Gate
+from claimable import Coin, Koffee
 
 slime_group = pygame.sprite.Group()
 killable_blocks_group = pygame.sprite.Group()
 gate_group = pygame.sprite.Group()
+coin_group = pygame.sprite.Group()
+koffee_group = pygame.sprite.Group()
 
 grid_x = 32
 grid_y = 30
@@ -166,6 +169,12 @@ class Earth:
                 if tile == 69:
                     gate = Gate(at_column * grid_x, at_row * grid_y-30, 0.2, 0.2)  # 0.2 for x&y is the perf. 2x1tile
                     gate_group.add(gate)
+                if tile == 25:
+                    coin = Coin(at_column * grid_x, at_row * grid_y, 0.5, 0.5)
+                    coin_group.add(coin)
+                if tile == 50:
+                    koffee = Koffee(at_column * grid_x, at_row * grid_y, 0.75, 0.75)
+                    koffee_group.add(koffee)
                 at_column += 1
             at_row += 1
 

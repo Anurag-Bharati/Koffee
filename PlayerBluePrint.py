@@ -1,6 +1,6 @@
 import pygame
 import os
-from level_generator import killable_blocks_group, slime_group, gate_group
+from level_generator import killable_blocks_group, slime_group, gate_group, coin_group, koffee_group
 
 
 GRAVITY = 0.75
@@ -11,7 +11,8 @@ class Player(pygame.sprite.Sprite):
 
     def __init__(self, player_type, health, xPos, yPos, player_scale, velocity):
         pygame.sprite.Sprite.__init__(self)
-
+        self.hurt_sfx = pygame.mixer.Sound("assets/audio/sfx/knight_hurt.wav")
+        self.hurt_sfx.set_volume(0.40)
         self.reset(player_type, health, xPos, yPos, player_scale, velocity)
 
     def reset(self, player_type, health, xPos, yPos, player_scale, velocity):
@@ -19,6 +20,7 @@ class Player(pygame.sprite.Sprite):
         global WIN
 
         self.current_vel = 0, 0
+        self.player_scale = player_scale
         self.Alive = True
         self.health = health
         self.init_health = health
@@ -71,7 +73,7 @@ class Player(pygame.sprite.Sprite):
 
     def mov(self, move_left, move_right, What):  # htf its showing this? not a error skip.
 
-        global WIN, sfx_play
+        global WIN
 
         # Resets mov var
         dx = 0  # Created to assign the change
@@ -123,6 +125,8 @@ class Player(pygame.sprite.Sprite):
         if pygame.sprite.spritecollide(self, killable_blocks_group, False) \
                 and (pygame.time.get_ticks() - self.startingtime > self.damage_cooldown):
             self.startingtime = pygame.time.get_ticks()
+            if self.health > 1:
+                self.hurt_sfx.play()
             self.health -= 2
             self.isJump = True
             self.damage_cooldown = 3000
@@ -136,6 +140,8 @@ class Player(pygame.sprite.Sprite):
         if pygame.sprite.spritecollide(self, slime_group, False) \
                 and (pygame.time.get_ticks() - self.startingtime > self.damage_cooldown):
             self.startingtime = pygame.time.get_ticks()
+            if self.health > 1:
+                self.hurt_sfx.play()
             self.health -= 1
 
             self.isJump = True
@@ -149,8 +155,14 @@ class Player(pygame.sprite.Sprite):
                 self.animation_list[0][2].set_alpha(80)
         if pygame.sprite.spritecollide(self, gate_group, False) and not WIN:
             WIN = True
+
         else:
             WIN = False
+
+        if pygame.sprite.spritecollide(self, coin_group, True):
+            pass
+        if pygame.sprite.spritecollide(self, koffee_group, True):
+            pass
         """if self.rect.bottom + dy > 480:          # Old collision system
             dy = 480 - self.rect.bottom
             self.above_ground = False"""
