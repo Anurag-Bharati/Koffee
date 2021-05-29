@@ -19,7 +19,7 @@ class Gate(pygame.sprite.Sprite):
                                                (int(block_img.get_width() * self.blockScaleX),
                                                 int(block_img.get_height() * self.blockScaleY)))
             block_img.convert_alpha()
-            block_img.set_colorkey((24,20,37))
+            block_img.set_colorkey((24, 20, 37))
             self.animation_list.append(block_img)
         self.image = self.animation_list[self.animation_index]
         self.rect = self.image.get_rect()  # Creating a for self

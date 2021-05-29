@@ -8,7 +8,7 @@ class Coin(pygame.sprite.Sprite):
         self.animation_index = 0
         self.animation_list = []
         self.update_time = pygame.time.get_ticks()
-        self.ANIMATION_TIMER = 80
+        self.ANIMATION_TIMER = 120
         self.blockScaleX = blockScaleX
         self.blockScaleY = blockScaleY
 
@@ -43,7 +43,7 @@ class Koffee(pygame.sprite.Sprite):
         self.animation_index = 0
         self.animation_list = []
         self.update_time = pygame.time.get_ticks()
-        self.ANIMATION_TIMER = 80
+        self.ANIMATION_TIMER = 100
         self.blockScaleX = blockScaleX
         self.blockScaleY = blockScaleY
 

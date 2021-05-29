@@ -22,7 +22,6 @@ show_colloidal = False
 
 slime_quantity = 0
 
-
 class Earth:
 
     def __init__(self, world_data):
@@ -166,14 +165,17 @@ class Earth:
                 if tile == 15:
                     spike = killBlock("waterb", at_column * grid_x, at_row*grid_y, 1, 1)
                     killable_blocks_group.add(spike)
+
                 if tile == 69:
                     gate = Gate(at_column * grid_x, at_row * grid_y-30, 0.2, 0.2)  # 0.2 for x&y is the perf. 2x1tile
                     gate_group.add(gate)
+
                 if tile == 25:
-                    coin = Coin(at_column * grid_x, at_row * grid_y, 0.5, 0.5)
+                    coin = Coin(at_column * grid_x + 8, at_row * grid_y + 7.5, 0.5, 0.5)
                     coin_group.add(coin)
+
                 if tile == 50:
-                    koffee = Koffee(at_column * grid_x, at_row * grid_y, 0.75, 0.75)
+                    koffee = Koffee(at_column * grid_x + 6, at_row * grid_y + 5.5, 0.75, 0.75)
                     koffee_group.add(koffee)
                 at_column += 1
             at_row += 1
