@@ -71,7 +71,7 @@ class Player(pygame.sprite.Sprite):
 
     def mov(self, move_left, move_right, What):  # htf its showing this? not a error skip.
 
-        global WIN
+        global WIN, sfx_play
 
         # Resets mov var
         dx = 0  # Created to assign the change

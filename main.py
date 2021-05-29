@@ -14,6 +14,7 @@ from buttons import Button
 
 
 # [2] Init the pygame modules:
+pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.mixer.init()
 pygame.init()
 
@@ -86,7 +87,11 @@ MainMenu = True
 sChange = False     # used for Transitions
 audiomute = True   # mute's audio.. used for toggle
 reset = False   # Resets player with the key 'R'
+portal_fx = True
+death_fx = True
 
+
+volume = 0.1
 
 # Creates a display
 flags = 0
@@ -157,6 +162,8 @@ def event_handler():            # All Event handling here
             elif event.key == K_d:
                 move_right = True
             if event.key == K_SPACE:
+                if not Knight.above_ground:
+                    jump_sfx.play()
                 Knight.isJump = True
             if event.key == K_r:
                 reset = True
@@ -191,14 +198,19 @@ blackout_Timer = pygame.time.get_ticks()
 
 def renderer():                 # All graphics here
 
-    global debugWindow_X, Transition, blackout_Timer, MainMenu, audiomute, reset, current_level, WIN
+    global debugWindow_X, Transition, blackout_Timer, MainMenu, audiomute, reset, current_level, WIN, portal_fx,\
+        death_fx, volume
 
     screen.fill(Cyan)
+
+    gate_group.draw(screen)
+    gate_group.update()
 
     Knight.draw(screen)
     if Knight.Alive and not MainMenu:
 
         Knight.mov(move_left, move_right, level)
+
     Knight.update()
     level.draw(screen)
 
@@ -208,9 +220,11 @@ def renderer():                 # All graphics here
     killable_blocks_group.draw(screen)
     killable_blocks_group.update()
 
-    gate_group.draw(screen)
+    pygame.mixer.music.set_volume(volume)
 
     if Knight.Alive:
+
+        death_fx = True
 
         if reset:
             if pygame.time.get_ticks() - blackout_Timer > 10:
@@ -225,8 +239,10 @@ def renderer():                 # All graphics here
                 Transition = 0
                 Knight.Alive = False
                 reset = False
-
         if WIN:
+            if portal_fx:
+                portal_fx = False
+                portal_sfx.play()
             if pygame.time.get_ticks() - blackout_Timer > 10:
                 blackout_Timer = pygame.time.get_ticks()
                 Transition += 1
@@ -238,6 +254,7 @@ def renderer():                 # All graphics here
             if Transition == 150:
                 Knight.reset("player", 3, 150, 300, .9, 3)
                 cleanup()
+                portal_fx = True
         else:
             if pygame.time.get_ticks() - blackout_Timer > 10:
                 blackout_Timer = pygame.time.get_ticks()
@@ -246,29 +263,41 @@ def renderer():                 # All graphics here
                 if Transition <= 0:
                     Transition = 0
 
+                volume += 0.0001
+                volume *= 1.01
+                if volume >= 0.1:
+                    volume = 0.1
+
             main_bg1.set_alpha(Transition)
             screen.blit(main_bg1, (0, 0))
 
     elif not Knight.Alive and not MainMenu:
-
+        if death_fx:
+            death_fx = False
+            death_sfx.play()
         if pygame.time.get_ticks() - blackout_Timer > 10:
             blackout_Timer = pygame.time.get_ticks()
+            volume -= 0.00001
+            volume *= 0.95
+            if volume <= 0.03:
+                volume = 0.03
             Transition += 1
             Transition *= 1.08
             if Transition >= 150:
                 Transition = 150
+
         main_bg.set_alpha(Transition)
         screen.blit(main_bg, (0, 0))
 
         if Transition == 150 and not Knight.Alive:                                   # RESETS HERE
+
             if restart_btn.draw(screen):
                 Knight.reset("player", 3, 150, 300, .9, 3)
                 Knight.Alive = True
 
             elif menu_btn.draw(screen) and not MainMenu:
-
-                Knight.reset("player", 3, 150, 300, .9, 3)
                 MainMenu = True
+                Knight.Alive = False
                 Transition = 0
 
             if audio_btn1.draw(screen):
@@ -276,7 +305,8 @@ def renderer():                 # All graphics here
                 if audiomute:
                     pygame.mixer.music.stop()
                 else:
-                    pygame.mixer.music.play(-1)
+                    pygame.mixer.music.play(-1, 0.0, 500)
+
     if debug:
 
         screen.fill(pygame.Color(Deep_blue), (0, 0, debugWindow_X, Window_Height))
@@ -306,8 +336,9 @@ def renderer():                 # All graphics here
 
 
 def main_menu():
-    global Transition, blackout_Timer, MainMenu, sChange, mainloop, fs, audiomute, flags, screen
+    global Transition, blackout_Timer, MainMenu, sChange, mainloop, fs, audiomute, flags, screen, volume
     screen.fill(Cyan)
+    Knight.Alive = False
 
     if fs:
         flags = HWSURFACE | DOUBLEBUF | FULLSCREEN
@@ -329,7 +360,7 @@ def main_menu():
         if audiomute:
             pygame.mixer.music.stop()
         else:
-            pygame.mixer.music.play(-1)
+            pygame.mixer.music.play(-1, 0.0, 500)
 
     if start_btn.draw(screen) and Transition == 0:
         sChange = True
@@ -339,10 +370,12 @@ def main_menu():
             blackout_Timer = pygame.time.get_ticks()
             Transition += 1
             Transition *= 1.05
+
             if Transition >= 150:
                 Transition = 150
                 sChange = False
                 MainMenu = False
+                Knight.Alive = True
     if exit_btn.draw(screen) and MainMenu:
         mainloop = False
 
@@ -379,9 +412,17 @@ logo = pygame.image.load("assets/images/logoKoffee.png")
 logo = pygame.transform.scale(logo, (logo.get_width()//3, logo.get_height()//3)).convert_alpha()
 
 pygame.mixer.music.load("assets/audio/KoffeeOST.mp3")
-pygame.mixer.music.set_volume(0.1)
+pygame.mixer.music.set_volume(volume)
+
+portal_sfx = pygame.mixer.Sound("assets/audio/sfx/portal.wav")
+portal_sfx.set_volume(0.5)
 
 Knight = Player("player", 3, 150, 300, .9, 3)
+jump_sfx = pygame.mixer.Sound("assets/audio/sfx/knight_jump.wav")
+jump_sfx.set_volume(0.25)
+
+death_sfx = pygame.mixer.Sound("assets/audio/sfx/knight_dead.wav")
+death_sfx.set_volume(0.5)
 
 if os.path.exists(f"assets/levels/level{current_level}.dat"):
     pickle_opn = open(f"assets/levels/level{current_level}.dat", "rb")
@@ -473,7 +514,7 @@ initial_time = pygame.time.get_ticks()
 
 debug_title = font_consolas.render(str("DEBUG_STAT"), True, White)
 
-game_info = font_consolas.render("version 1.7 | Dev(fe/be):210030", True, White)
+game_info = font_consolas.render("version Alpha-1.8 | Dev(fe/be):210030", True, White)
 
 res = (Window_Width, Window_Height)
 rawTick = font_consolas.render(str(f"praw_tick:{gameClock.get_rawtime()}"), True, White)

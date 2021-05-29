@@ -164,7 +164,7 @@ class Earth:
                     spike = killBlock("waterb", at_column * grid_x, at_row*grid_y, 1, 1)
                     killable_blocks_group.add(spike)
                 if tile == 69:
-                    gate = Gate(at_column * grid_x, at_row * grid_y-18, 1, 1)
+                    gate = Gate(at_column * grid_x, at_row * grid_y-30, 0.2, 0.2)  # 0.2 for x&y is the perf. 2x1tile
                     gate_group.add(gate)
                 at_column += 1
             at_row += 1
