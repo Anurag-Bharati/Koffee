@@ -70,7 +70,7 @@ class Earth:
                     tile = (block, img_rect)
                     self.tile_list.append(tile)
                 if tile == 3:
-                    stone = pygame.transform.flip(stone, bool(random.randint(0, 1)), False)
+                    stone = pygame.transform.flip(stone, bool(random.randint(0, 1)), bool(random.randint(0, 1)))
                     block = pygame.transform.scale(stone, (grid_x, grid_y))
                     img_rect = block.get_rect()
                     img_rect.x = at_column * grid_x
