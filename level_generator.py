@@ -5,13 +5,14 @@ import random
 from enemy import Enemy
 from not_standable import killBlock
 from change_level import Gate
-from claimable import Coin, Koffee
+from claimable import Coin, Koffee, Goffee
 
 slime_group = pygame.sprite.Group()
 killable_blocks_group = pygame.sprite.Group()
 gate_group = pygame.sprite.Group()
 coin_group = pygame.sprite.Group()
 koffee_group = pygame.sprite.Group()
+goffee_group = pygame.sprite.Group()
 
 grid_x = 32
 grid_y = 30
@@ -21,6 +22,7 @@ show_colloidal = False
 # For unittest
 
 slime_quantity = 0
+
 
 class Earth:
 
@@ -120,8 +122,8 @@ class Earth:
                     tile = (block, img_rect)
                     self.tile_list.append(tile)
                 if tile == -12:
-                    arrow_l = pygame.transform.flip(arrow, True, False)
-                    block = arrow_l
+                    arrow_r = pygame.transform.flip(arrow, True, False)
+                    block = arrow_r
                     img_rect = block.get_rect()
                     img_rect.x = at_column * grid_x + 7
                     img_rect.y = at_row * grid_y
@@ -177,6 +179,10 @@ class Earth:
                 if tile == 50:
                     koffee = Koffee(at_column * grid_x + 6, at_row * grid_y + 5.5, 0.75, 0.75)
                     koffee_group.add(koffee)
+
+                if tile == 100:
+                    goffee = Goffee(at_column * grid_x + 6, at_row * grid_y, 2, 2)
+                    goffee_group.add(goffee)
                 at_column += 1
             at_row += 1
 

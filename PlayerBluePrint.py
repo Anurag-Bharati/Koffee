@@ -2,7 +2,7 @@
 
 import pygame
 import os
-from level_generator import killable_blocks_group, slime_group, gate_group, coin_group, koffee_group
+from level_generator import killable_blocks_group, slime_group, gate_group, coin_group, koffee_group, goffee_group
 
 
 GRAVITY = 0.75
@@ -10,8 +10,11 @@ WIN = False
 
 cPoints = 0
 kPoints = 0
+gPoint = 0
+gPointCheck = False
 
 
+# noinspection PyAttributeOutsideInit
 class Player(pygame.sprite.Sprite):
 
     def __init__(self, player_type, health, xPos, yPos, player_scale, velocity):
@@ -22,6 +25,8 @@ class Player(pygame.sprite.Sprite):
         self.coin_sfx.set_volume(0.75)
         self.koffee_sfx = pygame.mixer.Sound("assets/audio/sfx/koffee.wav")
         self.koffee_sfx.set_volume(0.5)
+        self.goffee_sfx = pygame.mixer.Sound("assets/audio/sfx/victory.mp3")
+        self.goffee_sfx.set_volume(0.5)
         self.reset(player_type, health, xPos, yPos, player_scale, velocity)
 
     def reset(self, player_type, health, xPos, yPos, player_scale, velocity):
@@ -49,6 +54,8 @@ class Player(pygame.sprite.Sprite):
         self.startingtime = pygame.time.get_ticks()
 
         self.damage_cooldown = 0
+
+        self.gPointWait = pygame.time.get_ticks()
 
         self.ANIMATION_TIMER = 125  # when to update (in ms)
 
@@ -82,7 +89,7 @@ class Player(pygame.sprite.Sprite):
 
     def mov(self, move_left, move_right, What):  # htf its showing this? not a error skip.
 
-        global WIN, cPoints, kPoints
+        global WIN, cPoints, kPoints, gPoint, gPointCheck
 
         # Resets mov var
         dx = 0  # Created to assign the change
@@ -171,14 +178,18 @@ class Player(pygame.sprite.Sprite):
         if pygame.sprite.spritecollide(self, coin_group, True):
             self.coin_sfx.play()
             cPoints += 1
-            pass
+
         if pygame.sprite.spritecollide(self, koffee_group, True):
             self.koffee_sfx.play()
             kPoints += 1
-            pass
-        """if self.rect.bottom + dy > 480:          # Old collision system
-            dy = 480 - self.rect.bottom
-            self.above_ground = False"""
+
+        if pygame.sprite.spritecollide(self, goffee_group, True):
+            gPointCheck = True
+            self.gPointWait = pygame.time.get_ticks()
+            self.goffee_sfx.play()
+        if gPointCheck:
+            if pygame.time.get_ticks() - self.gPointWait >= 1800:
+                gPoint = 1
 
         self.rect.x += dx
         self.rect.y += dy
@@ -204,7 +215,7 @@ class Player(pygame.sprite.Sprite):
             self.animation_index += 1  # increase the animation index
             if self.animation_index >= len(self.animation_list[self.action]):  # to prevent overflow
                 if self.action == 3:
-                    self.animation_index = len(self.animation_list[self.action]) -1
+                    self.animation_index = len(self.animation_list[self.action]) - 1
                 else:
                     self.animation_index = 0
 

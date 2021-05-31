@@ -11,9 +11,14 @@ from pygame.locals import *  # Importing pygame classes into global namespace :V
 
 import PlayerBluePrint
 import hud_grid
+import IO
+
 from PlayerBluePrint import Player
 from buttons import Button
-from level_generator import Earth, slime_group, killable_blocks_group, gate_group, coin_group, koffee_group
+
+from level_generator import Earth, slime_group, killable_blocks_group,\
+    gate_group, coin_group, koffee_group, goffee_group
+
 
 # [2] Init the pygame modules:
 pygame.mixer.pre_init(44100, -16, 2, 512)
@@ -22,6 +27,9 @@ pygame.init()
 
 pygame.display.set_caption("Koffee")
 
+
+startDumping = True
+startChecking = True
 
 font_impact = pygame.font.SysFont("Impact", 18)
 font_consolas = pygame.font.SysFont("consolas", 15)
@@ -38,7 +46,6 @@ font_calibri0.set_bold(True)
 WIN = PlayerBluePrint.WIN
 gameClock = pygame.time.Clock()
 current_level = 0
-
 
 #           >---------[CONSTANTS]---------<
 
@@ -60,12 +67,22 @@ FPS = 60  # FPS CA
 fps_color = pygame.Color("White")  # Init fps_color
 move_left = False
 move_right = False
-VERSION = "Alpha-1.95"
+VERSION = "Alpha-1.99"
 
 coin = 0
 coffee = 0
+
+coffeeS = coffee
+coinS = coin
 score = coin * (coffee+1)
+scoreH = 0
 timePlayed = 0
+
+goffee = 0
+
+rect_bar = pygame.Rect(Window_Width // 3, 600, Window_Width // 3, 60)
+
+dataIN = []
 
 # Debug tools
 
@@ -91,6 +108,8 @@ sbl_bodyBoxR = pygame.Rect(status_boxR.center[0] - 120, status_boxR.center[1] //
 greet = True
 intro_play = True
 intro = True
+
+FINISH = False
 
 showStatus = False
 
@@ -123,7 +142,7 @@ volume = 0.1
 if fs:
     flags = HWSURFACE | DOUBLEBUF | FULLSCREEN
 else:
-    flags = 0
+    flags = HWSURFACE
 
 screen = pygame.display.set_mode((Window_Width, Window_Height), flags, 32, vsync=True)  # Size, flags, Color, verticalSy
 
@@ -133,6 +152,8 @@ pygame.display.set_icon(icon)
 
 #  LOADING SYSTEM
 
+Actual = pygame.time.get_ticks()
+endWait = pygame.time.get_ticks()
 
 mainloop = True
 
@@ -191,12 +212,13 @@ def text_to_screen(x, y, text, font, color=(255, 255, 255), alpha=255):
 
 def event_handler():            # All Event handling here
 
-    global move_right, move_left, debug, grid, flags, reset, WIN, coffee, coin, mainloop, showStatus
+    global move_right, move_left, debug, grid, flags, reset, WIN, coffee, coin, mainloop, showStatus, goffee, goffee_img
 
     WIN = PlayerBluePrint.WIN
 
     coffee = PlayerBluePrint.kPoints
     coin = PlayerBluePrint.cPoints
+    goffee = PlayerBluePrint.gPoint
 
     # Handling Animation
     if Knight.Alive:
@@ -212,8 +234,9 @@ def event_handler():            # All Event handling here
     for event in pygame.event.get():
 
         if event.type == pygame.QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+            IO.start([score, coin, coffee, timePlayed])
             mainloop = False
-        if event.type == KEYDOWN:  # Triggered when key is pressed down
+        if event.type == KEYDOWN and not goffee > 0:  # Triggered when key is pressed down
             if event.key == K_a:
                 move_left = True
             elif event.key == K_d:
@@ -268,7 +291,8 @@ blackout_Timer = pygame.time.get_ticks()
 def renderer():                 # All graphics here
 
     global debugWindow_X, Transition, blackout_Timer, MainMenu, audiomute, reset, current_level, WIN, portal_fx,\
-        death_fx, volume, play_ambiance, stop_ambiance, score, timePlayed
+        death_fx, volume, play_ambiance, stop_ambiance, score, timePlayed, dataIN, startDumping, scoreH, coinS,\
+        coffeeS, Actual, endWait, FINISH, startChecking, move_left, move_right
 
     screen.fill(Cyan)
 
@@ -281,13 +305,28 @@ def renderer():                 # All graphics here
     gate_group.draw(screen)
     gate_group.update()
 
+    goffee_group.draw(screen)
+    goffee_group.update()
+
+    if goffee > 0:
+        if goffee_img.get_alpha() < 200:
+            endWait = pygame.time.get_ticks()
+            goffee_img.set_alpha(255)
+        move_right = False
+        move_left = False
+        if pygame.time.get_ticks() - endWait >= 4000:
+            WIN = True
+            FINISH = True
+            MainMenu = False
+
     Knight.draw(screen)
 
     if Knight.Alive:
         Knight.mov(move_left, move_right, level)
         score = coin * (coffee + 1)
-
-        timePlayed = pygame.time.get_ticks()//1000//60      # saves time played by the user
+        if pygame.time.get_ticks() - Actual >= 1000:
+            Actual = pygame.time.get_ticks()
+            timePlayed += 1    # saves time played by the user
 
     Knight.update()
     level.draw(screen)
@@ -300,7 +339,25 @@ def renderer():                 # All graphics here
 
     pygame.mixer.music.set_volume(volume)
 
-    if Knight.Alive:
+    text_to_screen(1200, 25, f"X {str(coin)}", font_calibri, White)
+    screen.blit(coin_img, (1160, 22))
+    text_to_screen(1200, 60, f"X {str(coffee)}", font_calibri, White)
+    screen.blit(koffee_img, (1160, 57))
+    pygame.draw.rect(screen, (115, 62, 57), rect_bar)
+    pygame.draw.rect(screen, (228, 166, 114), rect_bar, 2)
+    pygame.draw.rect(screen, (162, 38, 51), rect_gK)
+    pygame.draw.rect(screen, (228, 166, 114), rect_gK, 2)
+
+    pygame.draw.rect(screen, (184, 111, 80), rectHP)
+    pygame.draw.rect(screen, (228, 166, 114), rectHP, 2)
+
+    pygame.draw.rect(screen, (184, 111, 80), rect_cK)
+    pygame.draw.rect(screen, (228, 166, 114), rect_cK, 2)
+
+    screen.blit(goffee_img,
+                (rect_bar.center[0] - goffee_img.get_width() // 2, rect_bar.center[1] - goffee_img.get_height() // 2))
+
+    if Knight.Alive and not FINISH:
         death_fx = True
 
         if reset:
@@ -317,7 +374,8 @@ def renderer():                 # All graphics here
                 Knight.Alive = False
                 reset = False
         if WIN:
-            if portal_fx:
+
+            if portal_fx and not FINISH:
                 portal_fx = False
                 portal_sfx.play()
             if pygame.time.get_ticks() - blackout_Timer > 10:
@@ -330,8 +388,13 @@ def renderer():                 # All graphics here
             screen.blit(main_bg1, (0, 0))
             if Transition == 150:
                 Knight.reset("player", 3, 150, 300, .9, 3)
+                if FINISH:
+                    finish()
+                    Knight.Alive = False
+                    death_sfx.stop()
                 cleanup()
                 portal_fx = True
+
         else:
             if pygame.time.get_ticks() - blackout_Timer > 10:
                 blackout_Timer = pygame.time.get_ticks()
@@ -374,10 +437,18 @@ def renderer():                 # All graphics here
                 Knight.Alive = True
 
             elif menu_btn.draw(screen) and not MainMenu:
+                if startDumping:
+                    startDumping = False
+                    dataIN = IO.start([score, coin, coffee, timePlayed])
+                    scoreH = dataIN[0]
+                    coinS = dataIN[1]
+                    coffeeS = dataIN[2]
+                    timePlayed = dataIN[3]
                 deselect_sfx.play()
                 MainMenu = True
                 Knight.reset("player", 3, 150, 300, .9, 3)
                 Knight.Alive = False
+                startDumping = True
 
                 Transition = 0
 
@@ -389,11 +460,6 @@ def renderer():                 # All graphics here
                 else:
                     select_sfx.play()
                     pygame.mixer.music.play(-1, 0.0, 1000)
-
-    text_to_screen(1200, 25, f"X {str(coin)}", font_calibri, White)
-    screen.blit(coin_img, (1160, 22))
-    text_to_screen(1200, 60, f"X {str(coffee)}", font_calibri, White)
-    screen.blit(koffee_img, (1160, 57))
 
     if debug:
 
@@ -421,15 +487,15 @@ def renderer():                 # All graphics here
     if play_ambiance and not MainMenu:
         play_ambiance = False
         ambiance.play(-1)
-
-    screen.blit(update_fps(), (10, 3))     # Must be at last :)
+    if not FINISH:
+        screen.blit(update_fps(), (10, 3))     # Must be at last :)
 
     pygame.display.update()
 
 
 def greetings():
     global Transition, blackout_Timer, MainMenu, intro, fadeIn, fadeOut, creditAlpha, greet, mainloop, USER, tbActive,\
-        tbColor, intro_play, showStatus
+        tbColor, intro_play, showStatus, scoreH, coinS, coffeeS, dataIN, timePlayed
 
     for event in pygame.event.get():
 
@@ -454,6 +520,12 @@ def greetings():
                     MainMenu = True
                     if USER == "":
                         USER = "Anonymous"
+                    IO.init(USER)
+                    dataIN = IO.start([score, coin, coffee, timePlayed])
+                    scoreH = dataIN[0]
+                    coinS = dataIN[1]
+                    coffeeS = dataIN[2]
+                    timePlayed = dataIN[3]
                     showStatus = True
 
                 else:
@@ -476,6 +548,12 @@ def greetings():
                         MainMenu = True
                         if USER == "":
                             USER = "Anonymous"
+                        IO.init(USER)
+                        dataIN = IO.start([score, coin, coffee, timePlayed])
+                        scoreH = dataIN[0]
+                        coinS = dataIN[1]
+                        coffeeS = dataIN[2]
+                        timePlayed = dataIN[3]
                         showStatus = True
 
                     elif not len(USER) > 9:
@@ -548,11 +626,52 @@ def greetings():
     pygame.display.update()
 
 
+def finish():
+
+    global MainMenu, mainloop, dataIN, startChecking,\
+        scoreH, coinS, coffeeS, timePlayed
+
+    screen.fill(Cyan)
+
+    if startChecking:
+        startChecking = False
+        dataIN = IO.start([score, coin, coffee, timePlayed])
+        scoreH = dataIN[0]
+        coinS = dataIN[1]
+        coffeeS = dataIN[2]
+        timePlayed = dataIN[3]
+
+    ambiance.fadeout(1000)
+    pygame.mixer.music.fadeout(1000)
+
+    text_to_screen(
+        Window_Width // 6 + 140, Window_Height // 2 - 100 + math.sin(time.time() * 5) * 5 - 25,
+        "CONGRATS        ", font_calibri0, White, 200)
+    text_to_screen(
+        Window_Width // 4, Window_Height // 2 - 100 + math.sin(time.time() * 5) * 5 - 25,
+        f"                    {USER} ", font_calibri0, (254, 231, 97), 200)
+    text_to_screen(
+        Window_Width // 5 - 45, Window_Height // 2 - math.sin(time.time() * 5) * 5 - 25,
+        "YOU HAVE COMPLETED THE DEMO!", font_calibri0, White, 200)
+    if exit_btn.draw(screen):
+        IO.start([score, coin, coffee, timePlayed])
+        mainloop = False
+
+    pygame.display.update()
+
+
 def main_menu():
     global Transition, blackout_Timer, MainMenu, sChange, mainloop, fs, audiomute, flags, screen, volume,\
         stop_ambiance, play_ambiance, sBoxYLevel, status_boxL, status_boxR, showStatus, sbl_topBoxL, sbl_topBoxR, \
-        sbl_bodyBoxL, sbl_bodyBoxR, sblBody_Y, sbl_BodyColor, timePlayed, text_opacity
-
+        sbl_bodyBoxL, sbl_bodyBoxR, sblBody_Y, sbl_BodyColor, text_opacity, dataIN, startChecking,\
+        scoreH, coinS, coffeeS, timePlayed
+    if startChecking:
+        startChecking = False
+        dataIN = IO.start([score, coin, coffee, timePlayed])
+        scoreH = dataIN[0]
+        coinS = dataIN[1]
+        coffeeS = dataIN[2]
+        timePlayed = dataIN[3]
     screen.fill(Cyan)
     Knight.Alive = False
 
@@ -561,7 +680,7 @@ def main_menu():
     if fs:
         flags = HWSURFACE | DOUBLEBUF | FULLSCREEN
     else:
-        flags = 0
+        flags = HWSURFACE
 
     screen.blit(logo, (
         Window_Width//2 - logo.get_width()//2,
@@ -570,6 +689,10 @@ def main_menu():
     text_to_screen(
         Window_Width//2 - 69, Window_Height//2.5 - 16 + math.sin(time.time()*5)*5 - 25,
         "Stage: Alpha", font_calibri, White, 200)
+
+    if exit_btn.draw(screen) and MainMenu:
+        IO.start([score, coin, coffee, timePlayed])
+        mainloop = False
 
     if fs_btn.draw(screen):
         fs = not fs
@@ -608,6 +731,7 @@ def main_menu():
                 Knight.Alive = True
 
     if exit_btn.draw(screen) and MainMenu:
+        IO.start([score, coin, coffee, timePlayed])
         mainloop = False
 
     status_boxL = pygame.Rect(100, sBoxYLevel, sBox_X, sBox_Y)
@@ -642,14 +766,14 @@ def main_menu():
     #   Status display
     text_to_screen(
         sbl_bodyBoxL[0] + 20, sbl_bodyBoxL[1] + 80, f"Score: {score}", font_calibriS, (234, 212, 170), text_opacity)
+    text_to_screen(sbl_bodyBoxL[0] + 20, sbl_bodyBoxL[1] + 100,
+                   f"High score: {scoreH}", font_calibriS, (234, 212, 170), text_opacity)
     text_to_screen(
-        sbl_bodyBoxL[0] + 20, sbl_bodyBoxL[1] + 100, f"High score:", font_calibriS, (234, 212, 170), text_opacity)
+        sbl_bodyBoxL[0] + 20, sbl_bodyBoxL[1] + 120, f"Coin: {coinS}", font_calibriS, (234, 212, 170), text_opacity)
     text_to_screen(
-        sbl_bodyBoxL[0] + 20, sbl_bodyBoxL[1] + 120, f"Coin: {coin}", font_calibriS, (234, 212, 170), text_opacity)
-    text_to_screen(
-        sbl_bodyBoxL[0] + 20, sbl_bodyBoxL[1] + 140, f"Koffee: {coffee}", font_calibriS, (234, 212, 170), text_opacity)
+        sbl_bodyBoxL[0] + 20, sbl_bodyBoxL[1] + 140, f"Koffee: {coffeeS}", font_calibriS, (234, 212, 170), text_opacity)
     text_to_screen(sbl_bodyBoxL[0] + 20, sbl_bodyBoxL[1] + 160,
-                   f"Time played: {timePlayed} min", font_calibriS, (234, 212, 170), text_opacity)
+                   f"Time played: {(timePlayed//60)} min", font_calibriS, (234, 212, 170), text_opacity)
 
     #   Credit
     text_to_screen(sbl_bodyBoxR[0] + 20, sbl_bodyBoxR[1] + 30,
@@ -715,7 +839,9 @@ def main_menu():
 def cleanup():
     global WIN, level, level_data, pickle_opn, current_level
     WIN = False
-    current_level += 1
+    if not FINISH:
+        current_level += 1
+
     if os.path.exists(f"assets/levels/level{current_level}.dat"):
         slime_group.empty()
         killable_blocks_group.empty()
@@ -748,6 +874,28 @@ coin_img = pygame.transform.scale(coin_img, (int(coin_img.get_width()*0.75), int
 koffee_img = pygame.image.load("assets/images/tiles/claimable/koffee/5.png").convert_alpha()
 koffee_img = pygame.transform.scale(koffee_img, (int(koffee_img.get_width()*0.8), int(koffee_img.get_height()*0.8)))
 
+goffee_img = pygame.image.load("assets/images/tiles/claimable/goffee/5.png")
+goffee_img = pygame.transform.scale(goffee_img, (int(goffee_img.get_width()*1.2), int(goffee_img.get_height()*1.2)))
+goffee_img.convert_alpha()
+goffee_img.set_alpha(25)
+
+rect_gK = goffee_img.get_rect()
+rectHP = goffee_img.get_rect()
+rect_cK = goffee_img.get_rect()
+
+rect_gK.x, rect_gK.y = (rect_bar.center[0] - goffee_img.get_width() // 2 - 20,
+                        rect_bar.center[1] - goffee_img.get_height() // 2 - 12)
+rect_gK.width, rect_gK.height = 80, 60
+
+rectHP.x, rectHP.y = (rect_bar.center[0] - goffee_img.get_width() // 2 - 170,
+                      rect_bar.center[1] - goffee_img.get_height() // 2 - 12)
+rectHP.width, rectHP.height = 120, 60
+
+rect_cK.x, rect_cK.y = (rect_bar.center[0] - goffee_img.get_width() // 2 + 90,
+                        rect_bar.center[1] - goffee_img.get_height() // 2 - 12)
+rect_cK.width, rect_cK.height = 120, 60
+
+
 pygame.mixer.music.load("assets/audio/Koffee_ost.mp3")
 pygame.mixer.music.set_volume(volume)
 
@@ -779,7 +927,6 @@ if os.path.exists(f"assets/levels/level{current_level}.dat"):
     level_data = pickle.load(pickle_opn)
     level = Earth(level_data)
     pickle_opn.close()
-
 
 start_btn = Button(
     Window_Width//2 - start_button.get_width()//4,
@@ -905,12 +1052,13 @@ if __name__ == "__main__":
         if greet:
             greetings()
 
-        if MainMenu and not greet:
+        if MainMenu and not greet and not FINISH:
             main_menu()
 
         if not MainMenu and not greet:
             renderer()
-
+        if FINISH and not Knight.Alive:
+            finish()
     pygame.mixer.quit()
     pygame.quit()
     sys.exit()
