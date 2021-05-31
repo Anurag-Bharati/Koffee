@@ -27,8 +27,11 @@ font_impact = pygame.font.SysFont("Impact", 18)
 font_consolas = pygame.font.SysFont("consolas", 15)
 font_calibri = pygame.font.SysFont("calibri", 24)
 font_calibri0 = pygame.font.SysFont("calibri", 50)
+font_calibriS = pygame.font.SysFont("calibri", 20)
+font_calibriS.set_bold(True)
 font_calibri.set_bold(True)
 font_calibri0.set_bold(True)
+
 
 # [3] Setting up a pause sys for main loop so that game match the given frame-rate:
 
@@ -57,9 +60,12 @@ FPS = 60  # FPS CA
 fps_color = pygame.Color("White")  # Init fps_color
 move_left = False
 move_right = False
+VERSION = "Alpha-1.95"
 
-score = 0
+coin = 0
 coffee = 0
+score = coin * (coffee+1)
+timePlayed = 0
 
 # Debug tools
 
@@ -68,10 +74,26 @@ grid = False
 debug = False
 
 MainMenu = False
+sBox_X = 350
+sBox_Y = 550
+sBoxYLevel = -500
+status_boxL = pygame.Rect(100, sBoxYLevel, sBox_X, sBox_Y)
+status_boxR = pygame.Rect(830, sBoxYLevel, sBox_X, sBox_Y)
+sbl_topBoxL = pygame.Rect(status_boxL.center[0] - 140, status_boxL.center[1]//4, 280, 50)
+sbl_topBoxR = pygame.Rect(status_boxR.center[0] - 140, status_boxR.center[1]//4, 280, 50)
+text_opacity = 0
+
+sblBody_Y = 5
+sbl_BodyColor = (194, 133, 105)
+sbl_bodyBoxL = pygame.Rect(status_boxL.center[0] - 120, status_boxL.center[1] // 2, 240, sblBody_Y)
+sbl_bodyBoxR = pygame.Rect(status_boxR.center[0] - 120, status_boxR.center[1] // 2, 240, sblBody_Y)
+
 greet = True
 intro_play = True
-
 intro = True
+
+showStatus = False
+
 creditAlpha = 0     # For Credit
 fadeIn = True
 fadeOut = False
@@ -94,23 +116,40 @@ death_fx = True
 play_ambiance = False
 stop_ambiance = False
 
-
 volume = 0.1
 
 # Creates a display
-flags = 0
+
 if fs:
     flags = HWSURFACE | DOUBLEBUF | FULLSCREEN
+else:
+    flags = 0
 
 screen = pygame.display.set_mode((Window_Width, Window_Height), flags, 32, vsync=True)  # Size, flags, Color, verticalSy
-
-pygame.mouse.set_cursor(pygame.cursors.diamond)  # change cursor icon
 
 icon = pygame.image.load("assets/images/Koffee.png").convert_alpha()
 
 pygame.display.set_icon(icon)
 
+#  LOADING SYSTEM
+
+
 mainloop = True
+
+notice = font_calibriS.render(
+            "Name must be at least 3 char long.", True, White)
+notice1 = font_calibriS.render(
+            "You can leave this blank if you want", True, White)
+notice2 = font_calibriS.render(
+            "to. But you CAN NOT change it later.", True, White)
+
+notice2.convert_alpha()
+notice1.convert_alpha()
+notice.convert_alpha()
+
+notice.set_alpha(100)
+notice1.set_alpha(100)
+notice2.set_alpha(100)
 
 
 def update_fps():  # Function for fps-overlay
@@ -134,19 +173,30 @@ def update_fps():  # Function for fps-overlay
     return fps_text
 
 
-def text_to_screen(x, y, text, font, color=(255, 255, 255)):
+def text_to_screen(x, y, text, font, color=(255, 255, 255), alpha=255):
+    """
+    :param x: position of text in x-axis
+    :param y: position of text in y-axis
+    :param text: should be string
+    :param font: choose font
+    :param color: choose color must provide a rgb value or tuple containing one
+    :param alpha: opacity of text
+    :return: no return
+    """
     img_font = font.render(text, True, color)
+    img_font.convert_alpha()
+    img_font.set_alpha(alpha)
     screen.blit(img_font, (x, y))
 
 
 def event_handler():            # All Event handling here
 
-    global move_right, move_left, debug, grid, flags, reset, WIN, coffee, score, mainloop
+    global move_right, move_left, debug, grid, flags, reset, WIN, coffee, coin, mainloop, showStatus
 
     WIN = PlayerBluePrint.WIN
 
     coffee = PlayerBluePrint.kPoints
-    score = PlayerBluePrint.cPoints
+    coin = PlayerBluePrint.cPoints
 
     # Handling Animation
     if Knight.Alive:
@@ -173,22 +223,28 @@ def event_handler():            # All Event handling here
                     jump_sfx.play()
                 Knight.isJump = True
             if event.key == K_r:
-                reset = True
+                if not MainMenu and Knight.Alive:
+                    reset = True
 
             if event.key == K_TAB:
-                if not debug:
-                    grid = False
-                    debug = True
-                else:
-                    debug = False
+                if not MainMenu:
+                    if not debug:
+                        grid = False
+                        debug = True
+                    else:
+                        debug = False
 
             if event.key == K_LCTRL:
+                if not MainMenu:
+                    if not grid:
+                        debug = False
+                        grid = True
+                    else:
+                        grid = False
 
-                if not grid:
-                    debug = False
-                    grid = True
-                else:
-                    grid = False
+            if event.key == K_q:
+                if MainMenu:
+                    showStatus = not showStatus
 
         if event.type == KEYUP:  # Released when key is released
             if event.key == K_a:
@@ -196,6 +252,11 @@ def event_handler():            # All Event handling here
 
             elif event.key == K_d:
                 move_right = False
+
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if MainMenu:
+                if status_boxL.collidepoint(event.pos) or status_boxR.collidepoint(event.pos):
+                    showStatus = not showStatus
 
 
 debugWindow_X = 1
@@ -207,7 +268,7 @@ blackout_Timer = pygame.time.get_ticks()
 def renderer():                 # All graphics here
 
     global debugWindow_X, Transition, blackout_Timer, MainMenu, audiomute, reset, current_level, WIN, portal_fx,\
-        death_fx, volume, play_ambiance, stop_ambiance
+        death_fx, volume, play_ambiance, stop_ambiance, score, timePlayed
 
     screen.fill(Cyan)
 
@@ -224,6 +285,9 @@ def renderer():                 # All graphics here
 
     if Knight.Alive:
         Knight.mov(move_left, move_right, level)
+        score = coin * (coffee + 1)
+
+        timePlayed = pygame.time.get_ticks()//1000//60      # saves time played by the user
 
     Knight.update()
     level.draw(screen)
@@ -271,7 +335,7 @@ def renderer():                 # All graphics here
         else:
             if pygame.time.get_ticks() - blackout_Timer > 10:
                 blackout_Timer = pygame.time.get_ticks()
-
+                Transition -= 0.5
                 Transition *= 0.96
                 if Transition <= 0:
                     Transition = 0
@@ -305,14 +369,16 @@ def renderer():                 # All graphics here
         if Transition == 150 and not Knight.Alive:                                   # RESETS HERE
 
             if restart_btn.draw(screen):
-                select_sfx.play()
+                start_sfx.play()
                 Knight.reset("player", 3, 150, 300, .9, 3)
                 Knight.Alive = True
 
             elif menu_btn.draw(screen) and not MainMenu:
                 deselect_sfx.play()
                 MainMenu = True
+                Knight.reset("player", 3, 150, 300, .9, 3)
                 Knight.Alive = False
+
                 Transition = 0
 
             if audio_btn1.draw(screen):
@@ -324,7 +390,7 @@ def renderer():                 # All graphics here
                     select_sfx.play()
                     pygame.mixer.music.play(-1, 0.0, 1000)
 
-    text_to_screen(1200, 25, f"X {str(score)}", font_calibri, White)
+    text_to_screen(1200, 25, f"X {str(coin)}", font_calibri, White)
     screen.blit(coin_img, (1160, 22))
     text_to_screen(1200, 60, f"X {str(coffee)}", font_calibri, White)
     screen.blit(koffee_img, (1160, 57))
@@ -363,7 +429,7 @@ def renderer():                 # All graphics here
 
 def greetings():
     global Transition, blackout_Timer, MainMenu, intro, fadeIn, fadeOut, creditAlpha, greet, mainloop, USER, tbActive,\
-        tbColor, intro_play
+        tbColor, intro_play, showStatus
 
     for event in pygame.event.get():
 
@@ -378,18 +444,41 @@ def greetings():
                 else:
                     deselect_sfx.play()
                     tbActive = False
-                if ok_box.collidepoint(event.pos):
+                if ok_box.collidepoint(event.pos) and (len(USER) > 2 or len(USER) == 0):
+
                     intro_sfx.fadeout(1000)
                     deselect_sfx.stop()
                     select_sfx.play()
                     greet = False
-                    MainMenu = True
 
+                    MainMenu = True
+                    if USER == "":
+                        USER = "Anonymous"
+                    showStatus = True
+
+                else:
+                    tbColor = (255, 0, 0)
             if tbActive:
                 if event.type == KEYDOWN:
                     if event.key == pygame.K_BACKSPACE:
                         USER = USER[:-1]
-                    elif not len(USER) > 20:
+                    elif event.key == pygame.K_TAB:
+                        print("210030")
+                    elif event.key == pygame.K_SPACE:
+                        pass
+                    elif event.key == pygame.K_RETURN:
+
+                        intro_sfx.fadeout(1000)
+                        deselect_sfx.stop()
+                        select_sfx.play()
+                        greet = False
+
+                        MainMenu = True
+                        if USER == "":
+                            USER = "Anonymous"
+                        showStatus = True
+
+                    elif not len(USER) > 9:
                         USER += event.unicode
 
     if intro:
@@ -413,21 +502,42 @@ def greetings():
                     creditAlpha += 1
                     creditAlpha *= 1.05
 
-                    if pygame.time.get_ticks() - pauseTimer > 5500:
+                    if pygame.time.get_ticks() - pauseTimer > 5000:
                         fadeIn = False
                         intro = False
 
     else:
         screen.fill(Cyan)
         Transition = 0
-        text_area = font_calibri.render(USER, True, tbColor)
-        ok_area = font_calibri0.render("SAVE", True, (234, 212, 170))
+
+        ask0 = font_calibri0.render(f"HI THERE!", True, White)
+        ask = font_calibri0.render("What's your name? :)", True, White)
+
+        USER = USER.capitalize()
+        text_area = font_calibri0.render(USER, True, tbColor)
+
+        ok_area = font_calibri0.render("SKIP", True, (234, 212, 170))
+
+        if 2 >= len(USER) > 0:
+            ok_area = font_calibri0.render("NO !", True, (234, 212, 170))
+        if len(USER) > 2:
+            ok_area = font_calibri0.render("SAVE", True, (234, 212, 170))
 
         pygame.draw.rect(screen, (184, 111, 80), text_box)
         pygame.draw.rect(screen, tbColor, text_box, 5)
+
         pygame.draw.rect(screen, (184, 111, 80), ok_box)
         pygame.draw.rect(screen, (234, 212, 170), ok_box, 5)
-        screen.blit(text_area, (box_x + Box_x // 8, box_y + Box_y // 3))
+        screen.blit(text_area, (box_x + Box_x // 8 + 3, box_y + Box_y // 3 - 10))
+
+        if USER == "":
+            screen.blit(notice, (box_x + 15, box_y + Box_y // 3 - 15))
+            screen.blit(notice1, (box_x + 15, box_y + Box_y // 3 + 5))
+            screen.blit(notice2, (box_x + 15, box_y + Box_y // 3 + 25))
+
+        screen.blit(ask0, (box_x + 180, box_y - 200 + math.sin(time.time()*5)*5 - 25))
+        screen.blit(ask, (box_x + 30, box_y - 120))
+
         screen.blit(ok_area, (ok_x + 20, ok_y + 18))
 
     if tbActive:
@@ -440,7 +550,9 @@ def greetings():
 
 def main_menu():
     global Transition, blackout_Timer, MainMenu, sChange, mainloop, fs, audiomute, flags, screen, volume,\
-        stop_ambiance, play_ambiance
+        stop_ambiance, play_ambiance, sBoxYLevel, status_boxL, status_boxR, showStatus, sbl_topBoxL, sbl_topBoxR, \
+        sbl_bodyBoxL, sbl_bodyBoxR, sblBody_Y, sbl_BodyColor, timePlayed, text_opacity
+
     screen.fill(Cyan)
     Knight.Alive = False
 
@@ -450,9 +562,14 @@ def main_menu():
         flags = HWSURFACE | DOUBLEBUF | FULLSCREEN
     else:
         flags = 0
+
     screen.blit(logo, (
         Window_Width//2 - logo.get_width()//2,
         Window_Height//4 - logo.get_height()/2 + math.sin(time.time()*5)*5 - 25))
+
+    text_to_screen(
+        Window_Width//2 - 69, Window_Height//2.5 - 16 + math.sin(time.time()*5)*5 - 25,
+        "Stage: Alpha", font_calibri, White, 200)
 
     if fs_btn.draw(screen):
         fs = not fs
@@ -476,20 +593,116 @@ def main_menu():
         start_sfx.play()
         play_ambiance = True
         sChange = True
-
+        showStatus = False
     if sChange:
         if pygame.time.get_ticks() - blackout_Timer > 10:
             blackout_Timer = pygame.time.get_ticks()
             Transition += 1
-            Transition *= 1.05
+            Transition *= 1.09
 
             if Transition >= 150:
                 Transition = 150
                 sChange = False
                 MainMenu = False
+                sBoxYLevel = -500
                 Knight.Alive = True
+
     if exit_btn.draw(screen) and MainMenu:
         mainloop = False
+
+    status_boxL = pygame.Rect(100, sBoxYLevel, sBox_X, sBox_Y)
+    status_boxR = pygame.Rect(830, sBoxYLevel, sBox_X, sBox_Y)
+    sbl_topBoxL = pygame.Rect(status_boxL.center[0] - 140, status_boxL.center[1] // 4, 280, 50)
+    sbl_topBoxR = pygame.Rect(status_boxR.center[0] - 140, status_boxR.center[1] // 4, 280, 50)
+    sbl_bodyBoxL = pygame.Rect(status_boxL.center[0] - 120, status_boxL.center[1] // 2, 240, sblBody_Y)
+    sbl_bodyBoxR = pygame.Rect(status_boxR.center[0] - 120, status_boxR.center[1] // 2, 240, sblBody_Y)  # 350
+
+    pygame.draw.rect(screen, (115, 62, 57), status_boxL)
+    pygame.draw.rect(screen, (115, 62, 57), status_boxR)
+    pygame.draw.rect(screen, (234, 212, 170), status_boxL, 5)
+    pygame.draw.rect(screen, (234, 212, 170), status_boxR, 5)
+    pygame.draw.rect(screen, (190, 74, 47), sbl_topBoxL)
+    pygame.draw.rect(screen, (190, 74, 47), sbl_topBoxR)
+    pygame.draw.rect(screen, (234, 212, 170), sbl_topBoxL, 3)
+    pygame.draw.rect(screen, (234, 212, 170), sbl_topBoxR, 3)
+
+    text_to_screen(sbl_topBoxL[0] + 100, sbl_topBoxL[1] + 13, "STATUS", font_calibri, White, 255)
+    text_to_screen(sbl_topBoxR[0] + 100, sbl_topBoxR[1] + 13, "CREDIT", font_calibri, White, 255)
+
+    pygame.draw.rect(screen, sbl_BodyColor, sbl_bodyBoxL)
+    pygame.draw.rect(screen, sbl_BodyColor, sbl_bodyBoxR)
+    pygame.draw.rect(screen, (234, 212, 170), sbl_bodyBoxL, 3)
+    pygame.draw.rect(screen, (234, 212, 170), sbl_bodyBoxR, 3)
+
+    #   Greetings
+    text_to_screen(
+        sbl_bodyBoxL[0] + 35, sbl_bodyBoxL[1] + 13, "Welcome back!", font_calibri, (234, 212, 170), text_opacity)
+    text_to_screen(sbl_bodyBoxL[0] + 35, sbl_bodyBoxL[1] + 35, f" {USER}", font_calibri, (254, 231, 97), text_opacity)
+
+    #   Status display
+    text_to_screen(
+        sbl_bodyBoxL[0] + 20, sbl_bodyBoxL[1] + 80, f"Score: {score}", font_calibriS, (234, 212, 170), text_opacity)
+    text_to_screen(
+        sbl_bodyBoxL[0] + 20, sbl_bodyBoxL[1] + 100, f"High score:", font_calibriS, (234, 212, 170), text_opacity)
+    text_to_screen(
+        sbl_bodyBoxL[0] + 20, sbl_bodyBoxL[1] + 120, f"Coin: {coin}", font_calibriS, (234, 212, 170), text_opacity)
+    text_to_screen(
+        sbl_bodyBoxL[0] + 20, sbl_bodyBoxL[1] + 140, f"Koffee: {coffee}", font_calibriS, (234, 212, 170), text_opacity)
+    text_to_screen(sbl_bodyBoxL[0] + 20, sbl_bodyBoxL[1] + 160,
+                   f"Time played: {timePlayed} min", font_calibriS, (234, 212, 170), text_opacity)
+
+    #   Credit
+    text_to_screen(sbl_bodyBoxR[0] + 20, sbl_bodyBoxR[1] + 30,
+                   "Game design:Anurag", font_calibriS, (234, 212, 170), text_opacity)
+    text_to_screen(sbl_bodyBoxR[0] + 20, sbl_bodyBoxR[1] + 50,
+                   "Sound design:Anurag", font_calibriS, (234, 212, 170), text_opacity)
+    text_to_screen(sbl_bodyBoxR[0] + 20, sbl_bodyBoxR[1] + 70,
+                   "Asset design:Anurag", font_calibriS, (234, 212, 170), text_opacity)
+    text_to_screen(sbl_bodyBoxR[0] + 20, sbl_bodyBoxR[1] + 90,
+                   "Level Design:Anurag", font_calibriS, (234, 212, 170), text_opacity)
+    text_to_screen(sbl_bodyBoxR[0] + 20, sbl_bodyBoxR[1] + 130,
+                   "Made by", font_calibriS, (234, 212, 170), text_opacity)
+    text_to_screen(sbl_bodyBoxR[0] + 20, sbl_bodyBoxR[1] + 130,
+                   "             Anurag", font_calibriS, (254, 231, 97), text_opacity)
+    text_to_screen(sbl_bodyBoxR[0] + 20, sbl_bodyBoxR[1] + 160,
+                   "Contacts:", font_calibriS, (234, 212, 170), text_opacity)
+    text_to_screen(sbl_bodyBoxR[0] + 20, sbl_bodyBoxR[1] + 180,
+                   "  - Facebook:", font_calibriS, (234, 212, 170), text_opacity)
+    text_to_screen(sbl_bodyBoxR[0] + 20, sbl_bodyBoxR[1] + 200,
+                   "    Anurag Bharati", font_calibriS, (234, 212, 170), text_opacity)
+    text_to_screen(sbl_bodyBoxR[0] + 20, sbl_bodyBoxR[1] + 220,
+                   "  - Instagram:", font_calibriS, (234, 212, 170), text_opacity)
+    text_to_screen(sbl_bodyBoxR[0] + 20, sbl_bodyBoxR[1] + 240,
+                   "    @gen.fro", font_calibriS, (234, 212, 170), text_opacity)
+    text_to_screen(sbl_bodyBoxR[0] + 20, sbl_bodyBoxR[1] + 280,
+                   f"Version - {VERSION}", font_calibriS, White, text_opacity//2)
+
+    if showStatus:
+        sbl_BodyColor = (194, 133, 105)
+        sBoxYLevel += 0.5
+        sBoxYLevel *= 0.959
+        sblBody_Y += 0.1
+        sblBody_Y *= 1.049
+        if sblBody_Y >= 350:
+            sblBody_Y = 350
+            text_opacity += 1
+            text_opacity *= 1.099
+            if text_opacity >= 255:
+                text_opacity = 255
+
+        if sBoxYLevel >= -10:
+            sBoxYLevel = -10
+    if not showStatus:
+        sbl_BodyColor = (162, 38, 51)
+        text_opacity -= 0.69
+        text_opacity *= 0.69
+        if text_opacity <= 1:
+            text_opacity = 0
+            if sBoxYLevel >= -499:
+                sBoxYLevel -= 1
+                sBoxYLevel *= 1.2
+            elif sBoxYLevel <= -500:
+                sBoxYLevel = -500
 
     main_bg1.set_alpha(Transition)
     screen.blit(main_bg1, (0, 0))
@@ -516,7 +729,7 @@ def cleanup():
 
 credit = pygame.image.load("assets/images/credit.png").convert_alpha()
 credit = pygame.transform.scale(credit, (credit.get_width()//4, credit.get_height()//4))
-intro_sfx = pygame.mixer.Sound("assets/audio/sfx/intro.wav")
+intro_sfx = pygame.mixer.Sound("assets/audio/sfx/intro.mp3")
 intro_sfx.set_volume(0.5)
 
 main_bg = pygame.image.load("assets/images/mainbg.png").convert_alpha()
@@ -567,27 +780,30 @@ if os.path.exists(f"assets/levels/level{current_level}.dat"):
     level = Earth(level_data)
     pickle_opn.close()
 
+
 start_btn = Button(
     Window_Width//2 - start_button.get_width()//4,
     Window_Height//2 - start_button.get_height()//4, start_button, .5)
 
-restart_btn = Button(
-    Window_Width//2 - restart_button.get_width()//4,
-    Window_Height//2 - restart_button.get_height()//4, restart_button, .5)
 exit_btn = Button(
     Window_Width//2 - exit_button.get_width()//4,
     Window_Height//2 + exit_button.get_height()//1.5, exit_button, .5)
-menu_btn = Button(
-    Window_Width//1.21,
-    Window_Height//1.25, menu_button, .35)
 
 fs_btn = Button(
     Window_Width//2 - fs_button.get_width()//3,
     Window_Height//2 + fs_button.get_height()//3.2, fs_button, .3)
 
 audio_btn = Button(
-    Window_Width//2 + audio_button.get_width()//12 - audio_button.get_width()//24,
-    Window_Height//2 + audio_button.get_height()//3.2, audio_button, .3)
+    Window_Width // 2 + audio_button.get_width() // 12 - audio_button.get_width() // 24,
+    Window_Height // 2 + audio_button.get_height() // 3.2, audio_button, .3)
+
+
+restart_btn = Button(
+    Window_Width // 2 - restart_button.get_width() // 4,
+    Window_Height // 2 - restart_button.get_height() // 4, restart_button, .5)
+menu_btn = Button(
+    Window_Width//1.21,
+    Window_Height//1.25, menu_button, .35)
 
 audio_btn1 = Button(
     Window_Width//2 - audio_button.get_width()//6.65,
@@ -651,7 +867,7 @@ initial_time = pygame.time.get_ticks()
 
 debug_title = font_consolas.render(str("DEBUG_STAT"), True, White)
 
-game_info = font_consolas.render("version Alpha-1.9 | Dev(fe/be):210030", True, White)
+game_info = font_consolas.render(f"version {VERSION} | Dev(fe/be):210030", True, White)
 
 res = (Window_Width, Window_Height)
 rawTick = font_consolas.render(str(f"praw_tick:{gameClock.get_rawtime()}"), True, White)
