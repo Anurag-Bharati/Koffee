@@ -492,7 +492,7 @@ def renderer():                 # All graphics here
         screen.blit(update_fps(), (10, 3))     # Must be at last :)
 
     pygame.display.update()
-
+    return Knight.Alive
 
 def greetings():
     global Transition, blackout_Timer, MainMenu, intro, fadeIn, fadeOut, creditAlpha, greet, mainloop, USER, tbActive,\
