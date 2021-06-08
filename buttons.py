@@ -1,4 +1,4 @@
-import pygame, math, time
+import pygame
 
 
 class Button:

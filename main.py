@@ -224,13 +224,13 @@ def event_handler():            # All Event handling here
     if Knight.Alive and not FINISH:
 
         if Knight.above_ground:
-            Player.change_action(Knight, new_action = 2)  # 2 = jump
+            Player.change_action(Knight, new_action=2)  # 2 = jump
         elif (move_right or move_left) and not Knight.above_ground and Knight.current_vel[0] != 0:
-            Player.change_action(Knight, new_action = 1)  # 1 = run
+            Player.change_action(Knight, new_action=1)  # 1 = run
         else:
-            Player.change_action(Knight, new_action = 0)  # 0 = idle
+            Player.change_action(Knight, new_action=0)  # 0 = idle
     if not Knight.Alive:
-        Player.change_action(Knight, new_action = 3)
+        Player.change_action(Knight, new_action=3)
     for event in pygame.event.get():
 
         if event.type == pygame.QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
@@ -493,6 +493,7 @@ def renderer():                 # All graphics here
 
     pygame.display.update()
     return Knight.Alive
+
 
 def greetings():
     global Transition, blackout_Timer, MainMenu, intro, fadeIn, fadeOut, creditAlpha, greet, mainloop, USER, tbActive,\
@@ -1067,4 +1068,4 @@ if __name__ == "__main__":
     sys.exit()
 
 else:
-    mainloop = False
+    mainloop = True
