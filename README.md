@@ -146,13 +146,13 @@ Project Link: [Public](https://github.com/Anurag-Bharati/Koffee)
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [commit-shield]: https://img.shields.io/github/commit-activity/m/Anurag-Bharati/Koffee?style=for-the-badge
-[commit-url]:https://github.com/softwarica-github/final-all-project1-st40008cem-Anurag-Bharati/network
+[commit-url]:https://github.com/Anurag-Bharati/Koffee/network
 [contributors-shield]:https://img.shields.io/github/contributors/Anurag-Bharati/Koffee?style=for-the-badge
-[contributors-url]: https://github.com/softwarica-github/final-all-project1-st40008cem-Anurag-Bharati/graphs/contributors
+[contributors-url]: https://github.com/Anurag-Bharati/Koffee/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/Anurag-Bharati/Koffee?style=for-the-badge
-[forks-url]: https://github.com/softwarica-github/final-all-project1-st40008cem-Anurag-Bharati/network/members
+[forks-url]: https://github.com/Anurag-Bharati/Koffeenetwork/members
 [size-shield]: https://img.shields.io/github/languages/code-size/Anurag-Bharati/Koffee?style=for-the-badge
-[size-url]: https://github.com/softwarica-github/final-all-project1-st40008cem-Anurag-Bharati/
+[size-url]: https://github.com/Anurag-Bharati/Koffee
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/anurag-bharati-5abb6820a/
-[product-screenshot]: https://github.com/softwarica-github/final-all-project1-st40008cem-Anurag-Bharati/blob/master/assets/images/level5.png
+[product-screenshot]: https://github.com/Anurag-Bharati/Koffee/blob/master/assets/images/level5.png
